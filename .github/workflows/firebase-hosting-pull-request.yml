@@ -1,0 +1,39 @@
+name: Deploy to Firebase Hosting on PR
+on: pull_request
+permissions:
+  checks: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  build_and_preview:
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # ① Node / npm / npx の存在確認（ログでバージョンを出す）
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Diagnose Node toolchain
+        run: |
+          node -v
+          npm -v
+          npx --version
+
+      # ② （静的サイトなら不要）ビルドが必要ならアンコメントしてください
+      # - run: npm ci && npm run build
+
+      # ③ デプロイ
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+
+          # ← ここが一番重要：シークレット名が GitHub 側と完全一致しているか再確認
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GCP_CXJAPANCOLLABOR_NPRD_88957 }}
+
+          projectId: gcp-cxjapancollabor-nprd-88957
+          target: staging
+          channelId: pr-${{ github.event.number }}
+          expires: 7d
