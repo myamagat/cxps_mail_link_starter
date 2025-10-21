@@ -1,25 +1,32 @@
 {
-  "hosting": {
-    "public": "public",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "headers": [
-      {
-        "source": "**",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "no-store"
-          },
-          {
-            "key": "Content-Security-Policy",
-            "value": "frame-ancestors 'self' https://*.sharepoint.com https://*.office.com"
-          }
-        ]
-      }
-    ]
-  }
+  "hosting": [
+    {
+      "target": "staging",
+      "public": "public",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "headers": [
+        {
+          "source": "**",
+          "headers": [
+            { "key": "Cache-Control", "value": "no-store" },
+            { "key": "Content-Security-Policy", "value": "frame-ancestors 'self' https://*.sharepoint.com https://*.office.com" }
+          ]
+        }
+      ]
+    },
+    {
+      "target": "production",
+      "public": "public",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "headers": [
+        {
+          "source": "**",
+          "headers": [
+            { "key": "Cache-Control", "value": "no-store" },
+            { "key": "Content-Security-Policy", "value": "frame-ancestors 'self' https://*.sharepoint.com https://*.office.com" }
+          ]
+        }
+      ]
+    }
+  ]
 }

@@ -2,27 +2,18 @@ name: Deploy to Firebase Hosting on merge to main
 on:
   push:
     branches: [ main ]
-
-permissions:
-  contents: read
-
 jobs:
   deploy_production:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+        with: { node-version: '20' }
       - name: Diagnose Node toolchain
         run: |
           node -v
           npm -v
           npx --version
-
-      # - run: npm ci && npm run build  # •K—v‚È‚Æ‚«‚¾‚¯
-
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
