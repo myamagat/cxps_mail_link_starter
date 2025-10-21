@@ -12,17 +12,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 必要な場合のみビルド
-      # - run: npm ci && npm run build
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Diagnose Node toolchain
+        run: |
+          node -v
+          npm -v
+          npx --version
+
+      # - run: npm ci && npm run build  # 必要なときだけ
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GCP_CXJAPANCOLLABOR_NPRD_88957 }}
           projectId: gcp-cxjapancollabor-nprd-88957
-
-          # 本番ターゲット
           target: production
-
-          # live へ確定反映
           channelId: live
