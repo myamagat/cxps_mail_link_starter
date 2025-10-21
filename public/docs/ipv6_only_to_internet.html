@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IPv6リンクローカルのみのホストをインターネットへ到達させる方法</title>
+  <style>
+    body { font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, Arial, sans-serif; background:#ffffff; color:#111; line-height:1.75; margin:0; }
+    main { max-width: 960px; margin: 24px auto; padding: 24px; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); background:#fff; }
+    h1 { color:#0b4a6f; margin:0 0 12px; }
+    h2 { color:#0b4a6f; margin:24px 0 8px; }
+    h3 { color:#0b4a6f; margin:16px 0 6px; }
+    p { margin: 0 0 12px; }
+    pre { background:#ffffff; color:#111; border:1px solid #cbd5e1; border-radius:8px; padding:12px; overflow:auto; }
+    pre code { background:none; font-family: Consolas, Menlo, Monaco, "Courier New", monospace; font-size:15px; line-height:1.35; white-space:pre; display:block; }
+    table { width:100%; border-collapse:collapse; margin: 12px 0; font-size: 14px; }
+    th, td { border:1px solid #e5e7eb; padding:8px; text-align:left; }
+    th { background:#f1f5f9; }
+    ul { margin: 0 0 12px 20px; }
+    .note { background:#e0f2fe; border-left:6px solid #0ea5e9; padding:12px; border-radius:6px; margin:12px 0; }
+    .merit { background:#dcfce7; border-left:6px solid #22c55e; padding:12px; border-radius:6px; margin:12px 0; }
+    .demerit { background:#fee2e2; border-left:6px solid #ef4444; padding:12px; border-radius:6px; margin:12px 0; }
+    .summary { background:#f8fafc; border: 2px solid #e2e8f0; padding: 12px; border-radius: 8px; }
+    .tag { display:inline-block; font-size:12px; padding:2px 8px; border-radius:9999px; background:#f1f5f9; color:#334155; border:1px solid #e2e8f0; margin-right:6px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>🔌 IPv6リンクローカルだけのホストをインターネットへ出すには</h1>
+  <p><span class="tag">IPv6</span><span class="tag">Link-Local</span><span class="tag">NAT64/DNS64</span><span class="tag">Proxy</span></p>
+  <p><strong>結論:</strong> <em>IPv6リンクローカル（fe80::/10）だけ</em>を持つホストのパケットはルータを越えてはいけないため、<strong>IPレイヤのルーティングではインターネットに到達できません</strong>。実現するには、次のいずれかの方法を用います。</p>
+
+  <div class="summary">
+    <ol>
+      <li><strong>ULA + DNS64/NAT64（推奨）</strong> — ホストは <code>fd00::/8</code> などの ULA のみを持ち、ゲートウェイが v6→v4 変換して外の IPv4 インターネットへ接続。</li>
+      <li><strong>アプリ層プロキシ</strong> — 同一リンク上に HTTP/HTTPS プロキシや SOCKS5 を立て、クライアントは IPv6リンクローカルでプロキシへ接続。プロキシ経由で外に出る。</li>
+    </ol>
+  </div>
+
+  <h2>🗺️ 想定トポロジ</h2>
+  <pre><code> [HOSTA/B] ---[L2]--- [INSIDE GW] --- (outside: IPv4-only) --- Internet
+    |  IPv6: fe80::/64  (リンクローカルのみ)      ^
+    |                                              |
+    +-- 同一リンク上で到達できるのはINSIDE GWまで --+</code></pre>
+
+  <div class="note">リンクローカルは同一リンク内限定。<strong>デフォルトゲートウェイの next-hop をリンクローカルに指定すること自体は可</strong>ですが、<em>送信元がリンクローカルのまま</em>ではルータ転送不可です。</div>
+
+  <h2>✅ 方法1：ULA + DNS64/NAT64（推奨）</h2>
+  <p>クライアントは ULA のみ。ゲートウェイは inside で IPv6/IPv4 デュアル、outside は IPv4 のみで構いません。</p>
+
+  <h3>構成イメージ</h3>
+  <pre><code>     ┌──────────────────────────────────────────────────────────┐
+     │  Inside (dual)                               Outside (IPv4-only) │
+     │                                                                │
+     │  [HOSTA/B]  ULA: fd00:1::/64                                   │
+     │      |                                                         │
+     │  ┌───┴──── L2 ───┐                                            │
+     │  │ [Gateway]  v6: fd00:1::1 / v4: 192.0.2.2                    │
+     │  │   - DNS64 (e.g., Unbound)                                   │
+     │  │   - NAT64 (e.g., Jool/Tayga) → 64:ff9b::/96                 │
+     │  └───────────────┬─────────────────────────────────────────────┘
+     │                  NAT44/MASQUERADE → Internet (IPv4-only)
+     └──────────────────┘</code></pre>
+
+  <h3>RA/DHCPv6（dnsmasq例）</h3>
+  <pre><code># /etc/dnsmasq.d/ipv6.conf
+interface=eth0
+enable-ra
+# ULAを配布（SLAAC）
+dhcp-range=::,constructor:eth0,ra-only,64,12h
+# DNSはゲートウェイのULAに
+dhcp-option=option6:dns-server,[fd00:1::1]</code></pre>
+
+  <h3>DNS64（Unbound例）</h3>
+  <pre><code># /etc/unbound/unbound.conf.d/dns64.conf
+server:
+  interface: fd00:1::1
+  do-ip6: yes
+  module-config: "dns64 validator iterator"
+
+dns64:
+  prefix: 64:ff9b::/96</code></pre>
+
+  <h3>NAT64（Jool例）</h3>
+  <pre><code># 例：プールは Well-Known Prefix を使用
+jool instance add --netfilter --pool6 64:ff9b::/96
+jool -t nat64 --enable
+
+# outside側は従来のIPv4 NAT
+iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE</code></pre>
+
+  <div class="merit"><strong>メリット:</strong> クライアントは v6-only でOK（v4不要）／outsideはIPv4-onlyでOK／大半のアプリが透過的に動作</div>
+  <div class="demerit"><strong>デメリット:</strong> ゲートウェイでDNS64/NAT64の用意が必要</div>
+
+  <h2>🧰 方法2：アプリ層プロキシ（リンクローカル接続）</h2>
+  <p>IPレイヤの転送は諦め、<strong>同一リンク上</strong>のプロキシへリンクローカルで接続します。</p>
+
+  <h3>Squid（ゲートウェイ側）</h3>
+  <pre><code># squid.conf（リンクローカルにバインド）
+http_port [fe80::1%eth0]:3128
+acl localv6 localnet
+http_access allow localv6</code></pre>
+
+  <h3>クライアント設定例（ブラウザ）</h3>
+  <pre><code># URL欄／OS設定でプロキシ指定
+http://[fe80::1%eth0]:3128
+# Windows 例: %Ethernet / macOS: %en0 / Linux: %eth0 など</code></pre>
+
+  <h3>SOCKS5 例（danted）</h3>
+  <pre><code># /etc/danted.conf（要件に合わせて調整）
+logoutput: /var/log/danted.log
+internal: [fe80::1%eth0] port = 1080
+external: eth1  # IPv4 アップリンク側
+method: username none
+clientmethod: none
+user.notprivileged: nobody</code></pre>
+
+  <div class="merit"><strong>メリット:</strong> クライアントはLLAのみのまま／構築が比較的容易</div>
+  <div class="demerit"><strong>デメリット:</strong> プロキシ対応アプリに限定／名前解決の所在（クライアント or プロキシ）を要設計</div>
+
+  <h2>🔎 よくある質問</h2>
+  <table>
+    <tr><th>質問</th><th>回答</th></tr>
+    <tr>
+      <td>デフォルトゲートウェイにリンクローカルを指定しても良い？</td>
+      <td>はい、next-hop としての指定は可能です。ただし<strong>送信元アドレスがLLAのままではルータは転送しません</strong>。ULAやGUAを持たせる必要があります。</td>
+    </tr>
+    <tr>
+      <td>outsideがIPv4-onlyでも大丈夫？</td>
+      <td>方法1（DNS64/NAT64）なら問題ありません。ゲートウェイが v6→v4 変換します。</td>
+    </tr>
+    <tr>
+      <td>名前解決は？</td>
+      <td>方法1ではDNS64がAAAAを合成、方法2ではクライアントまたはプロキシ側で行います。</td>
+    </tr>
+  </table>
+
+  <h2>📘 まとめ</h2>
+  <div class="summary">
+    <strong>リンクローカルのみ</strong>ではルーティング不可。<br>
+    すべてのアプリをシンプルに動かすなら <strong>ULA + DNS64/NAT64</strong>。<br>
+    最小構成でブラウジング等なら <strong>アプリ層プロキシ</strong> が実用的です。
+  </div>
+
+  <div class="note">このページは、既存の社内ドキュメントの体裁に合わせた高コントラスト＆プレーン背景で作成しています。</div>
+</main>
+</body>
+</html>

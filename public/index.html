@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CXPS Collaboration Portal</title>
+  <style>
+    :root { --bd:#e5e7eb; --muted:#6b7280; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif; margin: 24px; }
+    .card { border: 1px solid var(--bd); border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+    .btn { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--bd); background: #f9fafb; cursor: pointer; }
+    .btn:hover { background: #f3f4f6; }
+    .muted { color: var(--muted); }
+    ul { line-height: 1.9; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+
+    // ▼▼ Firebase コンソールの Config を貼り付け ▼▼
+    const firebaseConfig = {
+      apiKey: "AIzaSyBNssRe0SUmvvJ5t5UUnqDCnTTF1Q-WD8c",
+      authDomain: "gcp-cxjapancollabor-nprd-88957.firebaseapp.com",
+      projectId: "gcp-cxjapancollabor-nprd-88957",
+      appId: "1:659563877036:web:b0e04146aa1002f5898509"
+    };
+    // ▲▲ ここまで ▲▲
+
+    // ===== 遷移先の決定ロジック =====
+    // 1) URLに ?next=/path があれば最優先
+    // 2) （任意）直近閲覧ページ(lastVisited)に戻す → 有効化したい場合は下のコメントを外す
+    // 3) 既定: /docs/intro.html
+    const DEFAULT_AFTER_LOGIN = "/docs/intro.html";
+
+    const url = new URL(window.location.href);
+    const qpNext = url.searchParams.get("next");
+    // const lastVisited = localStorage.getItem("cxps:lastVisited"); // ←必要ならコメント解除
+
+    function decideNext() {
+      if (qpNext && qpNext.startsWith("/")) return qpNext;
+      // if (lastVisited && lastVisited.startsWith("/")) return lastVisited; // ←必要ならコメント解除
+      return DEFAULT_AFTER_LOGIN;
+    }
+
+    // （任意）リンククリックで「直近閲覧ページ」を保存したい場合のユーティリティ
+    function rememberVisit(href) {
+      try {
+        if (href.startsWith("/")) localStorage.setItem("cxps:lastVisited", href);
+      } catch (_) {}
+    }
+    window.rememberVisit = rememberVisit;
+
+    // ===== Firebase 初期化 & 状態監視 =====
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    window.doLogout = () => signOut(auth);
+
+    onAuthStateChanged(auth, (user) => {
+      document.getElementById("loading").style.display = "none";
+      const guest = document.getElementById("guest");
+      const authed = document.getElementById("authed");
+
+      if (user) {
+        // サインイン済み → 自動遷移
+        const target = decideNext();
+        window.location.replace(target);
+      } else {
+        // 未サインイン → ログイン導線を表示
+        authed.style.display = "none";
+        guest.style.display = "block";
+      }
+    });
+  </script>
+</head>
+<body>
+  <header>
+    <h1>CXPS Collaboration/Observability ナレッジ ポータル</h1>
+    <div class="muted">docs.cxj-collab.com</div>
+  </header>
+
+  <div id="loading" class="card">Loading...</div>
+
+  <!-- 未サインイン時にだけ表示 -->
+  <div id="guest" class="card" style="display:none;">
+    <h3>閲覧にはサインインが必要です</h3>
+    <p class="muted">
+      まずは <a href="/login.html" target="_blank" rel="noopener">ログインページ（新しいタブ）</a> を開き、サインインを完了してください。<br>
+      サインインが完了すると、このページは自動的にコンテンツへ遷移します。
+    </p>
+    <a class="btn" href="/login.html" target="_blank" rel="noopener">ログインページを開く</a>
+  </div>
+
+  <!-- サインイン済み時は直ちにリダイレクトするため通常は見えません -->
+  <div id="authed" style="display:none;">
+    <div class="card">
+      <div>Signed in</div>
+      <button class="btn" onclick="doLogout()">Sign out</button>
+    </div>
+
+    <div class="card">
+      <h3>目次</h3>
+      <ul>
+        <li><a href="/docs/intro.html" onclick="rememberVisit('/docs/intro.html')" target="_blank">イントロダクション</a></li>
+        <li><a href="/docs/sample1.html" onclick="rememberVisit('/docs/sample1.html')" target="_blank">サンプルページ1</a></li>
+        <li><a href="/docs/sample2.html" onclick="rememberVisit('/docs/sample2.html')" target="_blank">サンプルページ2</a></li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

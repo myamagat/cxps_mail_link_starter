@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ジャンボフレーム徹底ガイド（背景・特徴・メリデメ・Catalyst/Nexus設定）</title>
+  <style>
+    body { font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, Arial, sans-serif; background:#ffffff; color:#111; line-height:1.75; margin:0; }
+    main { max-width: 960px; margin: 24px auto; padding: 24px; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); background:#fff; }
+    h1, h2, h3 { color:#0b4a6f; }
+    h1 { margin:0 0 12px; }
+    h2 { margin:24px 0 8px; }
+    h3 { margin:16px 0 6px; }
+    p { margin: 0 0 12px; }
+    pre { background:#ffffff; color:#111; border:1px solid #cbd5e1; border-radius:8px; padding:12px; overflow:auto; }
+    pre code { background:none; font-family: Consolas, Menlo, Monaco, "Courier New", monospace; font-size:15px; line-height:1.35; white-space:pre; display:block; }
+    table { width:100%; border-collapse:collapse; margin: 12px 0; font-size: 14px; }
+    th, td { border:1px solid #e5e7eb; padding:8px; text-align:left; }
+    th { background:#f1f5f9; }
+    .note { background:#e0f2fe; border-left:6px solid #0ea5e9; padding:12px; border-radius:6px; margin:12px 0; }
+    .merit { background:#dcfce7; border-left:6px solid #22c55e; padding:12px; border-radius:6px; margin:12px 0; }
+    .demerit { background:#fee2e2; border-left:6px solid #ef4444; padding:12px; border-radius:6px; margin:12px 0; }
+    .summary { background:#f8fafc; border: 2px solid #e2e8f0; padding: 12px; border-radius: 8px; }
+    .meta { font-size: 12px; color:#475569; margin-bottom: 16px; }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; background:#f1f5f9; border:1px solid #e2e8f0; padding:2px 6px; border-radius:6px; font-size:12px; }
+    .center { text-align:center; }
+    .cols { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 800px) { .cols { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<main>
+  <h1>🧩 ジャンボフレーム徹底ガイド</h1>
+  <p><strong>概要:</strong> 本記事では、ジャンボフレーム（一般にMTU 9000前後）について、誕生の背景、特徴、メリット・デメリット、そして <strong>Cisco Catalyst / Nexus</strong> での設定/検証方法をまとめます。データセンターやバックアップ/ストレージ（NFS/iSCSI）、東西トラフィックの最適化に有効です。</p>
+
+  <h2>🗺️ 背景：なぜジャンボフレームが生まれたか</h2>
+  <ul>
+    <li>ギガビット/10GbE以降で<strong>パケットあたりのヘッダ比率</strong>が相対的に高くなり、CPU割り込み/処理負荷が増加。</li>
+    <li>大容量ファイル転送・バックアップ・vMotion/ライブマイグレーション等で<strong>スループット最適化</strong>が必要に。</li>
+    <li>NICのLRO/GRO、TSO等のオフロードと組み合わせ、<strong>大きいMTU=少ないパケット数</strong>で効率化。</li>
+  </ul>
+
+  <h2>🔍 特徴（仕様観点）</h2>
+  <table>
+    <tr><th>用語</th><th>説明</th><th>メモ</th></tr>
+    <tr><td>Ethernetフレームサイズ</td><td>通常最大1518B（FCS含む）。ジャンボはベンダ依存で最大約 9216B前後。</td><td>多くの機器は<strong>MTU 9000</strong>または<strong>9216</strong>を上限とすることが多い。</td></tr>
+    <tr><td>IP MTU</td><td>IPヘッダ/ICMPヘッダを含むL3の最大サイズ。</td><td>ICMP <span class="kbd">size</span> は<strong>データ部</strong>長（後述）。</td></tr>
+    <tr><td>エンドツーエンド</td><td>経路上の全機器が同じ（または十分大きい）MTUに対応している必要。</td><td>不一致は断片化/ドロップの原因。</td></tr>
+  </table>
+
+  <h2>🏁 何が良くなる？（メリット）</h2>
+  <div class="merit">
+    <ul>
+      <li><strong>スループット向上</strong>：パケット数減少によりCPU割り込みとプロトコルオーバーヘッド低減。</li>
+      <li><strong>レイテンシ/ジッタ低減</strong>（ケースによる）：大量転送での効率化。</li>
+      <li><strong>仮想化/ストレージの性能向上</strong>：vMotion、NFS、iSCSI、分散ストレージで効果的。</li>
+    </ul>
+  </div>
+
+  <h2>⚠️ 注意点（デメリット/リスク）</h2>
+  <div class="demerit">
+    <ul>
+      <li><strong>経路全体の整合性が必須</strong>：一部機器/IFが1500のままだとドロップやフラグメント。</li>
+      <li><strong>トラブルシュートが複雑化</strong>：MTU/DF、トンネル、PoE監視IF等の例外に注意。</li>
+      <li><strong>バッファ占有</strong>：大フレームはキュー滞留時の影響が相対的に大きい。</li>
+    </ul>
+  </div>
+
+  <h2>🛠️ Cisco Catalyst での設定</h2>
+  <pre><code>conf t
+ system mtu 9000
+ exit
+ copy running-config startup-config
+ reload  ! 必要な場合のみ
+</code></pre>
+
+  <h2>🛠️ Cisco Nexus での設定</h2>
+  <p>Nexusシリーズ（NX-OS）は、Catalystと異なりMTU設定が柔軟で再起動不要です。</p>
+  <pre><code>conf t
+  ! 全体ポリシーまたはクラスごとのMTUを設定（QoSシステムポリシーで定義）
+  policy-map type network-qos jumbo
+    class type network-qos class-default
+      mtu 9216
+  exit
+  system qos
+    service-policy type network-qos jumbo
+  exit
+  system jumbomtu 9216
+
+  ! インターフェース単位の設定
+  interface port-channel1
+    mtu 9216
+  exit
+end
+
+! 保存
+copy running-config startup-config</code></pre>
+
+  <div class="note">
+    <strong>確認コマンド例:</strong>
+    <pre><code>show queuing interface Ethernet1/1
+show interface Ethernet1/1 | inc MTU
+show policy-map interface | sec jumbo
+show system qos</code></pre>
+  </div>
+
+  <h2>📘 まとめ</h2>
+  <div class="summary">
+    <strong>結論:</strong> ジャンボフレームは大容量転送で顕著な効率化をもたらしますが、Catalystでは <span class="kbd">system mtu jumbo</span>、Nexusでは <span class="kbd">policy-map type network-qos</span> により全体の整合を確保することが重要です。
+  </div>
+
+</main>
+</body>
+</html>

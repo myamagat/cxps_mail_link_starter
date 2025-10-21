@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login | CXPS Collaboration</title>
+  <style>
+    :root { --bd:#e5e7eb; --muted:#6b7280; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif; margin: 24px; }
+    .card { border: 1px solid var(--bd); border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.05); max-width: 720px; }
+    .btn { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--bd); background: #f9fafb; cursor: pointer; }
+    .btn:hover { background: #f3f4f6; }
+    input[type="email"], input[type="password"] { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--bd); margin: 6px 0; }
+    .muted { color: var(--muted); }
+    .row { display:flex; gap:16px; flex-wrap:wrap; }
+    .row .card { flex:1 1 320px; }
+    pre { background:#0b1021; color:#e3e8ff; padding:12px; border-radius:8px; overflow:auto; }
+  </style>
+
+  <!-- Firebase JS SDK (v10) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import {
+      getAuth, setPersistence, browserLocalPersistence,
+      isSignInWithEmailLink, sendSignInLinkToEmail, signInWithEmailLink,
+      signInWithEmailAndPassword, onAuthStateChanged, signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+
+    // ▼▼ Firebase コンソール「プロジェクト設定 > 全般 > Webアプリ（</>）」の Config を貼り付けてください ▼▼
+    const firebaseConfig = {
+      apiKey: "AIzaSyBNssRe0SUmvvJ5t5UUnqDCnTTF1Q-WD8c",
+      authDomain: "gcp-cxjapancollabor-nprd-88957.firebaseapp.com",
+      projectId: "gcp-cxjapancollabor-nprd-88957",
+      appId: "1:659563877036:web:b0e04146aa1002f5898509"
+      // storageBucket / messagingSenderId / measurementId は任意
+    };
+    // ▲▲ ここまで ▲▲
+
+    // 社内ドメイン制限（必要なら設定。空配列なら無効）
+    const ALLOWED_DOMAINS = ["cisco.com"]; // 例: ["cisco.com"] 複数可
+    const allowDomain = (email) => {
+      if (!email) return false;
+      if (ALLOWED_DOMAINS.length === 0) return true;
+      return ALLOWED_DOMAINS.some(d => email.toLowerCase().endsWith("@"+d.toLowerCase()));
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    setPersistence(auth, browserLocalPersistence);
+
+    // ===== メールリンク（パスワードレス） =====
+    window.sendLink = async () => {
+      const email = document.getElementById('ml-email').value.trim();
+      if (!allowDomain(email)) { alert("社内メールのみ許可されています"); return; }
+      const acs = {
+        // 認証完了後の戻り先。トップに戻したい場合は "/" に変えてOK
+        url: "https://docs.cxj-collab.com/login.html",
+        handleCodeInApp: true
+      };
+      try {
+        await sendSignInLinkToEmail(auth, email, acs);
+        window.localStorage.setItem('emailForSignIn', email);
+        document.getElementById('ml-status').textContent = "サインイン用リンクを送信しました。メールをご確認ください。";
+      } catch (e) {
+        alert("メールリンク送信エラー: " + e.message + " (code=" + e.code + ")");
+      }
+    };
+
+    // メール内リンクから戻ってきた場合の完了処理
+    if (isSignInWithEmailLink(auth, window.location.href)) {
+      let email = window.localStorage.getItem('emailForSignIn') || window.prompt('社内メールアドレスを入力してください:');
+      if (!allowDomain(email)) { alert("社内メールのみ許可されています"); }
+      else {
+        signInWithEmailLink(auth, email, window.location.href)
+          .then(() => {
+            window.localStorage.removeItem('emailForSignIn');
+            document.getElementById('ml-status').textContent = "サインイン完了しました。ポータルを開いてください。";
+          })
+          .catch(err => alert("リンク完了エラー: " + err.message + " (code=" + err.code + ")"));
+      }
+    }
+
+    // ===== Email/Password 併用（暫定運用） =====
+    window.pwLogin = async () => {
+      const email = document.getElementById('pw-email').value.trim();
+      const pass  = document.getElementById('pw-pass').value;
+      if (!allowDomain(email)) { alert("社内メールのみ許可されています"); return; }
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+      } catch (e) {
+        alert("パスワードサインインエラー: " + e.message + " (code=" + e.code + ")");
+      }
+    };
+
+    // ===== 共通：状態変化 =====
+    onAuthStateChanged(auth, (user) => {
+      document.getElementById('loading').style.display = 'none';
+      const signed = document.getElementById('signed');
+      const forms  = document.getElementById('forms');
+      if (user) {
+        forms.style.display  = 'none';
+        signed.style.display = 'block';
+        document.getElementById('who').textContent = user.email || "(signed-in)";
+      } else {
+        signed.style.display = 'none';
+        forms.style.display  = 'block';
+      }
+    });
+
+    window.doLogout = () => signOut(auth);
+  </script>
+</head>
+<body>
+  <h1>ログイン</h1>
+
+  <div id="loading" class="card">Loading...</div>
+
+  <div id="forms" style="display:none;">
+    <div class="row">
+      <!-- メールリンク（パスワードレス） -->
+      <div class="card">
+        <h3>メールリンクでサインイン（推奨）</h3>
+        <p class="muted">
+          社内メールアドレスにサインイン用リンクを送付します。<br>
+          ※ 社内メールに届かない場合は IT 設定が整うまで、右の「Email/Password」をお使いください。
+        </p>
+        <input id="ml-email" type="email" placeholder="your.name@cisco.com" />
+        <button class="btn" onclick="sendLink()">リンクを送る</button>
+        <p id="ml-status" class="muted"></p>
+      </div>
+
+      <!-- Email/Password 併用 -->
+      <div class="card">
+        <h3>Email / Password でサインイン（暫定）</h3>
+        <p class="muted">Firebase Console → Authentication → ユーザー で作成したアカウントを利用します。</p>
+        <input id="pw-email" type="email" placeholder="your.name@cisco.com" />
+        <input id="pw-pass" type="password" placeholder="Password" />
+        <button class="btn" onclick="pwLogin()">サインイン</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="signed" class="card" style="display:none;">
+    <div>Signed in as: <strong id="who"></strong></div>
+    <p class="muted">サインイン済みです。以下からポータルを開いてください。</p>
+    <a class="btn" href="/" target="_blank">ポータルを開く</a>
+    <button class="btn" onclick="doLogout()">Sign out</button>
+  </div>
+
+  <div class="card muted">
+    <strong>管理者向けチェック</strong>
+    <ol>
+      <li>Authentication → サインイン方法：<b>Email/Password</b> と <b>Email link (passwordless)</b> を <b>ON</b></li>
+      <li>Authentication → 設定 → <b>Authorized domains</b>：<code>docs.cxj-collab.com</code> と <code>&lt;projectId&gt;.firebaseapp.com</code> を追加</li>
+      <li>メールリンクの戻り先（actionCodeSettings.url）：このファイル内を <code>https://docs.cxj-collab.com/login.html</code> か <code>/</code> に統一</li>
+      <li>必要に応じて ALLOWED_DOMAINS（例: <code>["cisco.com"]</code>）を調整</li>
+    </ol>
+  </div>
+</body>
+</html>

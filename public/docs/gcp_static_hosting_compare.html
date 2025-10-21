@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GCPでHTMLコンテンツを配信する方式の比較</title>
+  <style>
+    body { font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, Arial, sans-serif; background:#ffffff; color:#111; line-height:1.75; margin:0; }
+    main { max-width: 960px; margin: 24px auto; padding: 24px; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); background:#fff; }
+    h1 { color:#0b4a6f; margin:0 0 12px; }
+    h2 { color:#0b4a6f; margin:24px 0 8px; }
+    h3 { color:#0b4a6f; margin:16px 0 6px; }
+    p { margin: 0 0 12px; }
+    ul { margin: 8px 0 12px 20px; }
+    pre { background:#ffffff; color:#111; border:1px solid #cbd5e1; border-radius:8px; padding:12px; overflow:auto; }
+    pre code { background:none; font-family: Consolas, Menlo, Monaco, "Courier New", monospace; font-size:15px; line-height:1.35; white-space:pre; display:block; }
+    table { width:100%; border-collapse:collapse; margin: 12px 0; font-size: 14px; }
+    th, td { border:1px solid #e5e7eb; padding:8px; text-align:left; vertical-align:top; }
+    th { background:#f1f5f9; }
+    .note { background:#e0f2fe; border-left:6px solid #0ea5e9; padding:12px; border-radius:6px; margin:12px 0; }
+    .merit { background:#dcfce7; border-left:6px solid #22c55e; padding:12px; border-radius:6px; margin:12px 0; }
+    .demerit { background:#fee2e2; border-left:6px solid #ef4444; padding:12px; border-radius:6px; margin:12px 0; }
+    .summary { background:#f8fafc; border: 2px solid #e2e8f0; padding: 12px; border-radius: 8px; }
+    .pill { display:inline-block; font-size:12px; background:#f1f5f9; border:1px solid #e2e8f0; padding:2px 8px; border-radius:999px; margin-right:6px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>🌐 GCPでHTMLコンテンツを配信する方式の比較</h1>
+  <p><strong>概要:</strong> 小～中規模の静的サイト配信でよく使う5方式を、要点だけシンプルに比較します。独自ドメイン、認証・埋め込み、運用コストの観点で整理しました。</p>
+
+  <h2>🧭 クイックサマリ</h2>
+  <table>
+    <tr>
+      <th>方式</th>
+      <th>向いているケース</th>
+      <th>ざっくり利点</th>
+      <th>注意点</th>
+    </tr>
+    <tr>
+      <td><strong>1) GCS + LB +（CDN）</strong></td>
+      <td>厳密なヘッダ制御、署名Cookie/URLなど細かい要件</td>
+      <td>柔軟性◎／CDNで広域配信／細かいセキュリティ制御</td>
+      <td>LBの固定費・構成が重い／小規模だと割高になりがち</td>
+    </tr>
+    <tr>
+      <td><strong>2) Firebase Hosting</strong></td>
+      <td>静的サイトを安価・簡単に、グローバル配信</td>
+      <td>CDN標準／SSL自動／デプロイ簡単／独自ドメイン容易</td>
+      <td>高度なL7制御は苦手／直リンク厳格制御は工夫が必要</td>
+    </tr>
+    <tr>
+      <td><strong>3) Cloud Run +（CDN）</strong></td>
+      <td>動的判定や認証ゲートを自作したいとき</td>
+      <td>任意言語・任意ロジック／スケール自動／CDN前段化</td>
+      <td>コンテナ管理や実装コスト／コールドスタート考慮</td>
+    </tr>
+    <tr>
+      <td><strong>4) App Engine</strong></td>
+      <td>GAEに慣れている・レガシーを活用したい</td>
+      <td>マネージド実行環境／スケール自動／簡易に動的対応</td>
+      <td>選択肢としてはCloud Runに寄る傾向／柔軟性は中庸</td>
+    </tr>
+    <tr>
+      <td><strong>5) Compute Engine + NGINX</strong></td>
+      <td>VMで完全自由度が必要／特殊モジュール・検証用途</td>
+      <td>最も自由／OS～Nginxまで細部チューニング可</td>
+      <td>パッチ・監視・スケールなど運用重い／コストも読みにくい</td>
+    </tr>
+  </table>
+
+  <div class="summary">
+    <strong>結論（小規模・静的＋独自ドメイン＋簡易認証）:</strong> まずは <b>Firebase Hosting</b> が最有力。<br>
+    厳格な直リンク遮断や高度な前段ロジックが必要になったら <b>Cloud Run + CDN</b> へ拡張。<br>
+    ルール細かくCDN/LBを使い分ける要件なら <b>GCS + LB + CDN</b> を検討。
+  </div>
+
+  <h2>📦 1) Cloud Storage + 外部HTTP(S)ロードバランサ +（任意で）Cloud CDN</h2>
+  <p class="pill">柔軟性</p><p class="pill">細かな制御</p><p class="pill">固定費あり</p>
+  <div class="merit">
+    <strong>メリット</strong>
+    <ul>
+      <li>署名付きURL/署名付きCookie、ヘッダ・キャッシュ制御などを細かく設計可能</li>
+      <li>Cloud CDN 併用で広域配信・TLS終端・WAFなどL7機能を組み合わせやすい</li>
+      <li>GCSの耐久性・オブジェクト運用（バージョニング/LIfeCycle等）が活用できる</li>
+    </ul>
+  </div>
+  <div class="demerit">
+    <strong>デメリット</strong>
+    <ul>
+      <li>外部HTTP(S) LB の基本料金が小規模だと相対的に重い</li>
+      <li>構成がやや複雑（DNS、LB、バックエンド、CDN、セキュリティの連携）</li>
+    </ul>
+  </div>
+  <p><strong>使いどころ:</strong> セキュリティ/配信制御を厳密に設計したい、将来の拡張余地を確保したい。</p>
+
+  <h2>⚡ 2) Firebase Hosting（GoogleのグローバルCDN）</h2>
+  <p class="pill">最短・低運用</p><p class="pill">SSL自動</p><p class="pill">静的サイトに最適</p>
+  <div class="merit">
+    <strong>メリット</strong>
+    <ul>
+      <li>デプロイが非常に簡単（CLIで同期）／SSL・CDNが標準</li>
+      <li>独自ドメイン設定が容易／キャッシュも自動最適化</li>
+      <li>小規模トラフィックならコスト最小で運用できる</li>
+    </ul>
+  </div>
+  <div class="demerit">
+    <strong>デメリット</strong>
+    <ul>
+      <li>L7の高度なカスタムや厳格な直リンク遮断（オブジェクト単位の署名等）は工夫が要る</li>
+      <li>サーバサイドの動的処理は別プロダクト（Functions/Run等）と組み合わせが必要</li>
+    </ul>
+  </div>
+  <p><strong>使いどころ:</strong> 静的中心・認証は軽めでOK・スピード最優先・コスト極小で始めたい。</p>
+
+  <h2>🧪 3) Cloud Run（コンテナ）+（任意で）Cloud CDN</h2>
+  <p class="pill">自由度</p><p class="pill">認証ゲート自作</p><p class="pill">実装コスト</p>
+  <div class="merit">
+    <strong>メリット</strong>
+    <ul>
+      <li>任意の言語/ランタイムで「認証クッキー検証→静的配信」などの前段ロジックを実装可</li>
+      <li>無停止デプロイ・自動スケール／CDN前段化でキャッシュ最適化も可能</li>
+      <li>Functions よりも長めの処理や独自ミドルを使いたい時に適合</li>
+    </ul>
+  </div>
+  <div class="demerit">
+    <strong>デメリット</strong>
+    <ul>
+      <li>コンテナビルド・CI/CD・ランタイムの運用が必要</li>
+      <li>コールドスタートや同時実行の設計など、アプリ側配慮が求められる</li>
+    </ul>
+  </div>
+  <p><strong>使いどころ:</strong> 厳格な直リンク遮断やきめ細かな認可、動的レスポンスを少量混在させたい。</p>
+
+  <h2>🛠️ 4) App Engine（Standard/Flexible）</h2>
+  <p class="pill">マネージド実行環境</p><p class="pill">歴史ある選択肢</p>
+  <div class="merit">
+    <strong>メリット</strong>
+    <ul>
+      <li>アプリをアップロードするだけでスケール・運用をGCPに委任しやすい</li>
+      <li>古くからあるPaaSとしての成熟度／既存資産を活かしやすい</li>
+    </ul>
+  </div>
+  <div class="demerit">
+    <strong>デメリット</strong>
+    <ul>
+      <li>現在は Cloud Run の選択肢が強く、GAE特有の設定に縛られる場合がある</li>
+      <li>静的サイト単体だと過剰になりやすい</li>
+    </ul>
+  </div>
+  <p><strong>使いどころ:</strong> 既存GAE資産の延命/統合や、アプリ主体で静的を添える場合。</p>
+
+  <h2>🧱 5) Compute Engine VM + NGINX</h2>
+  <p class="pill">最大自由度</p><p class="pill">チューニング自在</p><p class="pill">運用重い</p>
+  <div class="merit">
+    <strong>メリット</strong>
+    <ul>
+      <li>OS・Nginx・モジュール・TLSなど全レイヤを自由に構成・最適化可能</li>
+      <li>特殊要件/実験/既存運用との合わせ込みには最強の柔軟性</li>
+    </ul>
+  </div>
+  <div class="demerit">
+    <strong>デメリット</strong>
+    <ul>
+      <li>パッチ・監視・冗長化・スケールなど <em>全て自前</em>（運用/コストのブレが大きい）</li>
+      <li>小規模静的だけならオーバースペックになりがち</li>
+    </ul>
+  </div>
+  <p><strong>使いどころ:</strong> VM前提の組織標準・高度な独自モジュール・実験検証。</p>
+
+  <h2>🧩 選び方の目安</h2>
+  <ul>
+    <li><strong>静的中心＋最小運用：</strong> まずは <b>Firebase Hosting</b>。</li>
+    <li><strong>直リンク完全ガード・前段ロジック：</strong> <b>Cloud Run +（必要に応じて）CDN</b>。</li>
+    <li><strong>CDN/LBの細かい設計・WAF等：</strong> <b>GCS + LB + CDN</b>。</li>
+    <li><strong>既存資産/GAE慣れ：</strong> <b>App Engine</b>。</li>
+    <li><strong>完全自由度・特殊要件：</strong> <b>Compute Engine + NGINX</b>。</li>
+  </ul>
+
+  <div class="summary">
+    <strong>まとめ:</strong> 小規模・社内向けの静的サイトなら「<b>Firebase Hosting</b>で開始→必要に応じて<b>Cloud Run</b>や<b>GCS+CDN</b>へ段階拡張」がコスパと運用のバランスに優れます。
+  </div>
+</main>
+</body>
+</html>

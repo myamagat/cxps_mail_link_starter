@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IPv6 クイックガイド（リンクローカル / グローバル / 有効化手順）</title>
+  <style>
+    body { font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, Arial, sans-serif; background:#ffffff; color:#111; line-height:1.75; margin:0; }
+    main { max-width: 960px; margin: 24px auto; padding: 24px; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); background:#fff; }
+    h1 { color:#0b4a6f; margin:0 0 12px; }
+    h2 { color:#0b4a6f; margin:24px 0 8px; }
+    h3 { color:#0b4a6f; margin:16px 0 6px; }
+    p { margin: 0 0 12px; }
+    ul { margin: 0 0 12px 22px; }
+    pre { background:#ffffff; color:#111; border:1px solid #cbd5e1; border-radius:8px; padding:12px; overflow:auto; }
+    pre code { background:none; font-family: Consolas, Menlo, Monaco, "Courier New", monospace; font-size:15px; line-height:1.35; white-space:pre; display:block; }
+    code.inline { background:#f8fafc; border:1px solid #e2e8f0; padding:2px 6px; border-radius:6px; }
+    table { width:100%; border-collapse:collapse; margin: 12px 0; font-size: 14px; }
+    th, td { border:1px solid #e5e7eb; padding:8px; text-align:left; }
+    th { background:#f1f5f9; }
+    .note { background:#e0f2fe; border-left:6px solid #0ea5e9; padding:12px; border-radius:6px; margin:12px 0; }
+    .summary { background:#f8fafc; border: 2px solid #e2e8f0; padding: 12px; border-radius: 8px; }
+    .small { color:#475569; font-size:13px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>📘 IPv6 クイックガイド</h1>
+  <p class="small">リンクローカル / グローバルユニキャスト / Windows・Linux・ESXi 7.0 での有効化手順を簡潔にまとめています。</p>
+
+  <h2>🔹 IPv6 リンクローカルアドレス（fe80::/64）</h2>
+  <ul>
+    <li>同一リンク（L2 セグメント）内のみで有効な <strong>非ルーティング</strong> アドレス。サブネットを越えた通信は不可。</li>
+    <li>Windows / Linux では、<strong>インターフェース有効化時に自動付与</strong>。デフォルトでは <strong>EUI-64</strong> 形式で 64 bit の IID（Interface Identifier）を生成。</li>
+    <li>用途：近隣探索（NDP）、重複アドレス検出（DAD）、RA の受信、初期疎通など。</li>
+    <li>表示例：<code class="inline">fe80::021a:2bff:fe3c:4d5e%eth0</code>（<code class="inline">%</code>以降はゾーンID）。</li>
+  </ul>
+  <div class="note"><strong>メモ:</strong> EUI-64 生成は 48bit MAC を分割→<code class="inline">FF:FE</code> を挿入→先頭バイトの U/L ビット反転で 64bit IID を作成します。IID は <strong>常に 64 bit</strong> です。</div>
+
+  <h2>🔹 IPv6 グローバルユニキャスト（2000::/3）</h2>
+  <ul>
+    <li>サブネット外やインターネット到達に使用する <strong>ルーティング可能</strong> アドレス。</li>
+    <li>付与方法：SLAAC（RA）、DHCPv6、手動設定。</li>
+    <li>EUI-64 をそのまま用いると <strong>MAC 由来で端末特定されやすい</strong>ため、通常は
+      <strong>プライバシー拡張（RFC 4941）</strong>や<strong>安定プライバシー（RFC 7217）</strong>が推奨。</li>
+  </ul>
+
+  <table>
+    <tr><th>方式</th><th>概要</th><th>利点</th><th>注意点</th></tr>
+    <tr>
+      <td>EUI-64</td>
+      <td>MAC から IID を生成</td>
+      <td>設定不要で安定</td>
+      <td>追跡・特定のリスク</td>
+    </tr>
+    <tr>
+      <td>プライバシー拡張（RFC4941）</td>
+      <td>ランダム IID（随時更新）</td>
+      <td>トラッキング耐性が高い</td>
+      <td>アドレスが変わりやすい</td>
+    </tr>
+    <tr>
+      <td>安定プライバシー（RFC7217）</td>
+      <td>秘密鍵やIF情報から安定生成</td>
+      <td>安定・秘匿性の両立</td>
+      <td>実装依存の設定が必要</td>
+    </tr>
+  </table>
+
+  <div class="summary"><strong>ポイント:</strong> ルーティング疎通確認には <code class="inline">fe80::/64</code> ではなく、
+    グローバルユニキャスト（または ULA <code class="inline">fc00::/7</code>）を用い、適切なデフォルトルートと RA/DHCPv6 を併用します。
+  </div>
+
+  <h2>🛠 OS別：IPv6 の有効化（最短手順）</h2>
+
+  <h3>Windows（Server / 10 / 11）</h3>
+  <ul>
+    <li>GUI：<em>ネットワーク接続 → アダプターのプロパティ</em> で <strong>Internet Protocol Version 6 (TCP/IPv6)</strong> にチェック。</li>
+    <li>PowerShell（管理者）：</li>
+  </ul>
+<pre><code># アダプタ名を確認
+Get-NetAdapter | Select-Object Name, Status
+
+# IPv6 バインドを有効化（例: "Ethernet"）
+Enable-NetAdapterBinding -Name "Ethernet" -ComponentID ms_tcpip6
+
+# 付与状況を確認
+Get-NetIPAddress -AddressFamily IPv6
+</code></pre>
+
+  <h3>Linux（RHEL / Ubuntu 等）</h3>
+  <ul>
+    <li>カーネル機能を有効化（必要時）：</li>
+  </ul>
+<pre><code># 一時的（即時反映）
+sudo sysctl -w net.ipv6.conf.all.disable_ipv6=0
+sudo sysctl -w net.ipv6.conf.default.disable_ipv6=0
+
+# 永続化（例：/etc/sysctl.d/99-ipv6.conf）
+echo 'net.ipv6.conf.all.disable_ipv6=0' | sudo tee /etc/sysctl.d/99-ipv6.conf
+echo 'net.ipv6.conf.default.disable_ipv6=0' | sudo tee -a /etc/sysctl.d/99-ipv6.conf
+sudo sysctl --system
+
+# NetworkManager 利用時（接続プロファイルを指定）
+nmcli connection show
+sudo nmcli connection modify &lt;profile&gt; ipv6.method auto
+sudo nmcli connection up &lt;profile&gt;
+
+# 状態確認
+ip -6 addr show
+</code></pre>
+
+  <h3>VMware ESXi 7.0（管理ネットワーク）</h3>
+  <ul>
+    <li>vSphere Host Client：<em>ホスト → 構成 → ネットワーク → TCP/IP 構成</em> で <strong>IPv6 を有効化</strong>（再起動要求の案内が出る場合あり）。</li>
+    <li>DCUI：<em>Configure Management Network → IPv6 Configuration</em> で <strong>Enable IPv6</strong>（再起動要求）。</li>
+    <li>CLI（SSH/ESXi Shell）：</li>
+  </ul>
+<pre><code># スタック全体で IPv6 を有効化（再起動が必要）
+esxcli network ip set --ipv6-enabled true
+
+# 管理IF（例: vmk0）で IPv6 を有効化
+esxcli network ip interface ipv6 set -i vmk0 -e true
+
+# （任意）静的アドレスを付与
+esxcli network ip interface ipv6 address add -i vmk0 -I 2001:db8::10 -N 64
+
+# 確認
+esxcli network ip interface ipv6 address list
+</code></pre>
+
+  <p class="small">最終更新: 2025-10-14（JST）</p>
+</main>
+</body>
+</html>

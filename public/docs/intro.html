@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>記事インデックス</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans JP",sans-serif;margin:24px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .btn{padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;background:#f9fafb;cursor:pointer}
+    .btn:hover{background:#f3f4f6}
+  </style>
+
+  <!-- Firebase: サインアウト用の最小読込 -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+
+    // ▼▼ Firebase コンソールの Config を貼り付け ▼▼
+    const firebaseConfig = {
+      apiKey: "AIzaSyBNssRe0SUmvvJ5t5UUnqDCnTTF1Q-WD8c",
+      authDomain: "gcp-cxjapancollabor-nprd-88957.firebaseapp.com",
+      projectId: "gcp-cxjapancollabor-nprd-88957",
+      appId: "1:659563877036:web:b0e04146aa1002f5898509"
+    };
+    // ▲▲ ここまで ▲▲
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // 未サインインで来たらログインへ戻す（直リンク対策）
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        // 認証していない場合はログインへ（戻ったときにこのページへ遷移するよう next を付与）
+        const here = "/docs/intro.html";
+        location.replace(`/login.html?next=${encodeURIComponent(here)}`);
+      }
+    });
+
+    // サインアウト → ログインへ
+    window.doLogout = async () => {
+      try {
+        await signOut(auth);
+      } finally {
+        // サインアウト後にログインページへ
+        location.href = "/login.html";
+      }
+    };
+
+    // 直近閲覧ページの記録（index.html と同じ関数名）
+    window.rememberVisit = (href) => {
+      try { if (href.startsWith("/")) localStorage.setItem("cxps:lastVisited", href); } catch(e) {}
+    };
+  </script>
+</head>
+<body>
+  <div class="topbar">
+    <h1>記事インデックス</h1>
+    <button class="btn" onclick="doLogout()">サインアウト</button>
+  </div>
+  <p>GCP編</p> 
+   <a href="/docs/gcp_static_hosting_compare.html" onclick="rememberVisit('/docs/gcp_static_hosting_compare.html')" target="_blank">
+    GCPでHTMLコンテンツを配信する方式の比較
+  </a><br> 
+   <a href="/docs/firebase_quick_start.html" onclick="rememberVisit('/docs/firebase_quick_start.html')" target="_blank">
+    Firebase Hosting クイックスタートガイド
+  </a><br> 
+ <p>Proxy(Squid)編</p>
+  <a href="/docs/squid_adcs_ssl_bump.html" onclick="rememberVisit('/docs/squid_adcs_ssl_bump.html')" target="_blank">
+    Squid + ADCS で SSL Bump を構成する手順（社内向け）
+  </a><br>
+  <a href="/docs/squid_http_https.html" onclick="rememberVisit('/docs/squid_http_https.html')" target="_blank">
+    Squidで「http_port 8080」と「https_port 8082」を使い分ける
+  </a><br>
+  <p>ネットワーク編</p>
+  <a href="/docs/vdmz_default_route.html" onclick="rememberVisit('/docs/vdmz_default_route.html')" target="_blank">
+    vDMZでのデフォルトルート問題
+  </a><br>
+  <a href="/docs/vdmz_icmp_redirect.html" onclick="rememberVisit('/docs/vdmz_icmp_redirect.html')" target="_blank">
+    vDMZでのICMPリダイレクト問題
+  </a><br>
+  <a href="/docs/ipv6_only_to_internet.html" onclick="rememberVisit('/docs/ipv6_only_to_internet.html')" target="_blank">
+    IPv6リンクローカルだけのホストをインターネットへ出すには
+  </a><br>
+    <a href="/docs/ipv6_quick_guide.html" onclick="rememberVisit('/docs/ipv6_quick_guide.html')" target="_blank">
+    IPv6 クイックガイド
+  </a><br>
+    <a href="/docs/jumbo_frames_catalyst_nexus.html" onclick="rememberVisit('/docs/jumbo_frames_catalyst_nexus.html')" target="_blank">
+    ジャンボフレーム徹底ガイド
+  </a>
+ <p>セキュリティ編</p>
+    <a href="/docs/auth_mechanisms_sso_email.html" onclick="rememberVisit('/docs/auth_mechanisms_sso_email.html')" target="_blank">
+    仕組みで理解する：SSO と メールアドレス認証
+  </a>
+   </a><br>
+    <a href="/docs/auth_comparison.html" onclick="rememberVisit('/docs/auth_comparison.html')" target="_blank">
+    認証方式の比較（SSO / メールアドレス認証 / ID・パスワード）
+  </a>
+</body>
+</html>

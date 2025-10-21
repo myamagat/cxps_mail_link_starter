@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>vDMZでのICMPリダイレクト問題</title>
+  <style>
+    body { font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, Arial, sans-serif;
+           background:#ffffff; color:#111; line-height:1.75; margin:0; }
+    main { max-width: 960px; margin: 24px auto; padding: 24px; border:1px solid #e5e7eb;
+           border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); background:#fff; }
+    h1 { color:#0b4a6f; margin:0 0 12px; }
+    h2 { color:#0b4a6f; margin:24px 0 8px; }
+    h3 { color:#0b4a6f; margin:16px 0 6px; }
+    p { margin: 0 0 12px; }
+    pre { background:#ffffff; color:#111; border:1px solid #cbd5e1; border-radius:8px;
+          padding:12px; overflow:auto; }
+    pre code { background:none; font-family:Consolas,Menlo,Monaco,"Courier New",monospace;
+               font-size:15px; line-height:1.35; white-space:pre; display:block; }
+    hr { border:none; border-top:1px solid #cbd5e1; margin:20px 0; }
+    .note { background:#e0f2fe; border-left:6px solid #0ea5e9; padding:12px;
+            border-radius:6px; margin:12px 0; }
+    .summary { background:#f8fafc; border:2px solid #e2e8f0; padding:12px;
+               border-radius:8px; margin-top:16px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>🌐 vDMZでのICMPリダイレクト問題</h1>
+
+  <h2>🗺️ ネットワーク構成図</h2>
+  <pre><code>                +----------------------+
+                |         ASA          |
+                |     192.168.100.254  |
+                +----------+-----------+
+                           |
+===========================+================================ 192.168.100.0/24
+      .100                 |                        .241
+    +------+                                          +-----------+
+    | PC1 |                                          |  ISR-G2   |
+    +------+                                          +-----------+
+                                                        |
+                                                        | .254
+===========================+================================ 192.168.110.0/24
+                                                        | .100
+                                                     +--------+
+                                                     |  PC2   |
+                                                     +--------+</code></pre>
+
+  <h2>⚙️ 動作のポイント</h2>
+  <p>上記のようなネットワーク構成では、<strong>ASA（ファイアウォール）</strong> はデフォルト設定のままでは
+  <strong>ICMPリダイレクトメッセージ</strong> を送信しません。</p>
+
+  <p>そのため、<strong>PC1</strong> が <code>192.168.110.0/24</code> 宛の通信を行う場合には、
+  以下のいずれかの対応が必要です。</p>
+
+  <h2>🧭 対応方法</h2>
+
+  <h3>✅ 方法1：デフォルトゲートウェイを変更</h3>
+  <p>PC1のデフォルトゲートウェイ（DGW）を <strong>ISR-G2（192.168.100.241）</strong> に設定します。</p>
+
+  <h3>✅ 方法2：スタティックルートを追加</h3>
+  <p>PC1にスタティックルートを追加し、宛先「192.168.110.0/24」への経路を次のように指定します。</p>
+
+  <pre><code>宛先ネットワーク: 192.168.110.0
+サブネットマスク: 255.255.255.0
+ネクストホップ:    192.168.100.241</code></pre>
+
+  <div class="note">
+    💡 ASAはICMPリダイレクトを送信しないため、PC1側でルートを明示的に設定する必要があります。
+  </div>
+
+  <h2>📘 まとめ</h2>
+  <div class="summary">
+    ASAではICMPリダイレクトが無効なため、<strong>PC1側で経路の明示設定</strong>が必須です。<br>
+    特に異なるセグメント（例：<code>192.168.110.0/24</code>）への通信は、<strong>ISR-G2経由</strong>とするよう調整しましょう。
+  </div>
+</main>
+</body>
+</html>

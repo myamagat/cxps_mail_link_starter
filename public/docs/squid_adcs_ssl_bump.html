@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Squid + ADCS で SSL Bump を構成する手順（社内向け）</title>
+  <style>
+    body { font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, Arial, sans-serif; background:#ffffff; color:#111; line-height:1.75; margin:0; }
+    main { max-width: 960px; margin: 24px auto; padding: 24px; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); background:#fff; }
+    h1 { color:#0b4a6f; margin:0 0 12px; }
+    h2 { color:#0b4a6f; margin:24px 0 8px; }
+    h3 { color:#0b4a6f; margin:16px 0 6px; }
+    p { margin: 0 0 12px; }
+    ul, ol { margin: 0 0 12px 20px; }
+    pre { background:#ffffff; color:#111; border:1px solid #cbd5e1; border-radius:8px; padding:12px; overflow:auto; }
+    pre code { background:none; font-family: Consolas, Menlo, Monaco, "Courier New", monospace; font-size:15px; line-height:1.4; display:block; white-space:pre; }
+    table { width:100%; border-collapse:collapse; margin: 12px 0; font-size: 14px; }
+    th, td { border:1px solid #e5e7eb; padding:8px; text-align:left; }
+    th { background:#f1f5f9; }
+    .note { background:#fff8e1; border-left:6px solid #facc15; padding:12px; border-radius:6px; margin:12px 0; }
+    .checklist { background:#f8fafc; border:2px solid #e2e8f0; border-radius:8px; padding:12px; margin:12px 0; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>🔐 Squid + ADCS で SSL Bump を構成する手順（社内向け）</h1>
+
+  <h2>🔍 概要</h2>
+  <p>このドキュメントは、社内の <strong>Active Directory Certificate Services (ADCS)</strong> を用いて、<strong>Squid プロキシで SSL Bump（HTTPS 通信の中間解釈）</strong> を構成する方法を説明します。</p>
+  <p>目的は、社内クライアントの HTTPS トラフィックを可視化・制御（マルウェア検査・URL フィルタリング等）することです。</p>
+
+  <div class="note">⚠️ 注意：SSL Bump は暗号化通信を復号するため、プライバシー・法令・社内ポリシーに十分配慮してください。</div>
+
+  <h2>🧩 前提条件</h2>
+  <ul>
+    <li>ADCS（Enterprise CA）が稼働していること</li>
+    <li>サブCA証明書を発行できる権限があること</li>
+    <li>Squid 4.x 以上（Linux環境）</li>
+    <li><code>ssl_crtd</code> が利用可能</li>
+    <li>クライアントは AD ドメイン参加済み（GPO 配布が可能）</li>
+  </ul>
+
+  <h2>🗺️ アーキテクチャ概要</h2>
+  <pre><code>[Client]
+   │ HTTPS
+   ▼
+[Squid Proxy (ssl_bump + CA cert + ssl_crtd)]
+   │ HTTPS
+   ▼
+[Internet / Origin Server]
+</code></pre>
+
+<div style="text-align: center;"><img src="images/s1-1.png" alt="" width="608.8" height="202.4"></div><br>
+
+  <p>Squid は ADCS から発行された「サブCA証明書」を使い、HTTPS 通信を復号・再暗号化します。</p>
+
+  <h2>⚙️ 構成パターン</h2>
+  <table>
+    <tr><th>方式</th><th>説明</th><th>推奨度</th></tr>
+    <tr><td>A. サブCA方式（推奨）</td><td>ADCS から Squid 用のサブCA証明書を発行し使用</td><td>⭐⭐⭐⭐⭐</td></tr>
+    <tr><td>B. 自己署名方式</td><td>Squid が自己署名 CA を作成し、GPO で配布</td><td>⭐⭐</td></tr>
+  </table>
+
+<h2>🧾 ADCS 側の設定（サブCA発行）</h2>
+
+<h3>CSR 生成（Squid側）</h3>
+<p>・Squid用のサブCA証明書を発行するための「証明書署名要求（CSR）」を作成します。</p>
+<p>・CSRの署名用にまず秘密鍵(※)を作成し、その秘密鍵を指定してCSRを発行します。</p>
+
+<div class="note">※秘密鍵は、SSL bump時に各サイト用の「偽サーバ証明書」を発行・署名するための鍵となります。</div>
+
+<pre><code>openssl genrsa -out squid_subca.key 4096
+
+cat > ca_req.conf
+[ req ]
+default_bits       = 4096
+prompt             = no
+distinguished_name = dn
+x509_extensions    = v3_ca
+
+[ dn ]
+C  = JP
+ST = Tokyo
+L  = Tokyo
+O  = Cisco
+OU = CXPS
+CN = Squid-Proxy-SubCA
+
+[ v3_ca ]
+basicConstraints = critical, CA:TRUE, pathlen:0
+keyUsage         = critical, cRLSign, keyCertSign
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer
+
+openssl req -new -key squid_subca.key -out squid_subca.csr -config ca_req.conf
+</code></pre>
+
+<h2>🧱 Squid 側の設定</h2>
+
+<h3>ssl_crtd 初期化</h3>
+<p><code>・ssl_crtd</code> とは、Squidで SSL Bump を行う際に使われる「動的証明書生成用の補助プログラム」です。</p>
+<p>・SSL Bump では、プロキシが中間者として通信を復号するために、アクセス先ごとに「偽のサーバ証明書」を動的に発行します。<br>
+・その証明書を実際に生成・キャッシュしているのが <code>ssl_crtd</code> です。</p>
+
+<pre><code>SSLDB=/var/lib/ssl_db
+mkdir -p ${SSLDB}
+chown -R proxy:proxy ${SSLDB}
+/usr/lib64/squid/security/ssl_crtd -c -s ${SSLDB}
+</code></pre>
+
+<h3>証明書配置</h3>
+<p>1. サブCA証明書を <code>/etc/squid/ssl_cert/squid_ca_cert.pem</code> に書き込みます。</p>
+<p>2. ルートCA証明書を <code>/etc/squid/ssl_cert/squid_ca_cert.pem</code> の末尾に追記し、「証明書チェーン」を1ファイルにまとめます。<br>
+3. サブCAの秘密鍵を <code>.pem</code> 形式で保存します。この鍵が実際に SSL bump で動的証明書を署名するために使用されます。</p>
+
+<pre><code>cat squid_subca.crt > /etc/squid/ssl_cert/squid_ca_cert.pem
+cat root_ca.crt >> /etc/squid/ssl_cert/squid_ca_cert.pem
+cat squid_subca.key > /etc/squid/ssl_cert/squid_ca_key.pem
+</code></pre>
+
+  <h3>squid.conf 設定例</h3>
+  <pre><code>http_port 3128
+https_port 3129 ssl-bump cert=/etc/squid/ssl_cert/squid_ca.pem generate-host-certificates=on dynamic_cert_mem_cache_size=4MB
+
+sslcrtd_program /usr/lib/squid/security/ssl_crtd -s /var/lib/ssl_db -M 4MB
+sslcrtd_children 8 startup=1 idle=1
+
+acl step1 at_step SslBump1
+ssl_bump peek step1
+ssl_bump bump all
+
+sslproxy_cert_error allow all
+sslproxy_flags DONT_VERIFY_PEER
+sslproxy_options NO_SSLv3 NO_TLSv1
+sslproxy_cipher HIGH:!aNULL:!MD5
+</code></pre>
+
+  <h2>🖥️ クライアント側：CA信頼の配布（GPO）</h2>
+  <ol>
+    <li>GPO → Computer Configuration → Windows Settings → Security Settings → Public Key Policies → Trusted Root Certification Authorities</li>
+    <li>ADCSルートCAまたはSquidサブCAをインポート</li>
+    <li><code>gpupdate /force</code> で反映</li>
+    <li>ブラウザでアクセスし、発行者が <strong>Squid-Proxy-SubCA</strong> になっていれば成功</li>
+  </ol>
+
+  <h2>🧪 動作確認</h2>
+  <h3>コマンドライン</h3>
+  <pre><code>curl -x http://&lt;squid-ip&gt;:3128 -k https://www.google.com/ -v</code></pre>
+  <h3>ブラウザ</h3>
+  <p>HTTPS サイトにアクセスし、証明書発行者が <strong>Squid-Proxy-SubCA</strong> であることを確認します。</p>
+
+  <h2>🧰 トラブルシュート</h2>
+  <table>
+    <tr><th>症状</th><th>原因 / 対処</th></tr>
+    <tr><td>証明書エラー</td><td>クライアントにCA未配布／チェーン不完全</td></tr>
+    <tr><td>ssl_crtdエラー</td><td>ディレクトリ権限／初期化忘れ</td></tr>
+    <tr><td>一部サイトでエラー</td><td>HSTSやピン留め → <code>ssl_bump splice</code>で除外</td></tr>
+  </table>
+
+  <pre><code>acl sensitive dstdomain .bank.example
+ssl_bump peek step1
+ssl_bump splice sensitive
+ssl_bump bump all
+</code></pre>
+
+  <h2>✅ チェックリスト</h2>
+  <div class="checklist">
+    <ul>
+      <li>ADCS 管理者承認済み</li>
+      <li>サブCA発行完了</li>
+      <li>Squid 鍵／証明書配置</li>
+      <li>ssl_crtd 初期化</li>
+      <li>GPO でCA配布</li>
+      <li>ブラウザで発行者確認</li>
+      <li>HSTSサイト除外設定</li>
+    </ul>
+  </div>
+
+  <h2>📚 補足：自己署名CA方式（簡易構成）</h2>
+  <pre><code>openssl req -new -x509 -days 3650 -newkey rsa:4096 -keyout squid_ca.key -out squid_ca.crt
+cat squid_ca.crt squid_ca.key > /etc/squid/ssl_cert/squid_ca.pem
+</code></pre>
+  <p>GPOでroot_ca.crtを配布し、構成はサブCA方式とほぼ同じです。</p>
+
+  <h2>📎 参考リンク</h2>
+  <ul>
+    <li><a href="http://www.squid-cache.org/Doc/config/ssl_bump/" target="_blank">Squid公式ドキュメント – SSL Bump</a></li>
+    <li><a href="https://learn.microsoft.com/ja-jp/windows-server/identity/ad-ds/manage/component-updates/enterprise-ca" target="_blank">Microsoft Docs – AD CS サブCAの構成</a></li>
+  </ul>
+
+</main>
+</body>
+</html>

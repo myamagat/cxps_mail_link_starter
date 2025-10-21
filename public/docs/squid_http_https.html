@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Squidで「http_port 8080」と「https_port 8082」を使い分ける（高コントラスト版）</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #111111;
+      --muted: #374151;
+      --border: #cbd5e1;
+      --head: #0b4a6f;
+      --tbl-head: #f1f5f9;
+      --code-bg: #ffffff;
+      --link: #0b63a3;
+    }
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--bg); color: var(--text);
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+      line-height: 1.75;
+    }
+    a { color: var(--link); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 28px 18px 56px; }
+    header { padding: 8px 0 14px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+    h1 { font-size: 1.9rem; margin: 0 0 4px; letter-spacing: .02em; color: var(--head); }
+    h2 { margin-top: 2.0rem; color: var(--head); }
+    h3 { margin-top: 1.2rem; color: var(--head); }
+    h4 { margin-top: 1.0rem; color: var(--head); }
+    .card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin: 12px 0 18px; }
+    blockquote { margin: 12px 0; padding: 10px 14px; border-left: 6px solid #0ea5e9; background: #e0f2fe; border-radius: 8px; }
+    pre {
+      background: var(--code-bg); border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px 14px; overflow: auto;
+    }
+    pre code {
+      color: #111; font-size: 15px; line-height: 1.35; white-space: pre; display: block;
+      font-family: Consolas, Menlo, Monaco, "Courier New", ui-monospace, SFMono-Regular, monospace;
+    }
+    code {
+      background: #fff; border: 1px solid var(--border); padding: 0 .25em; border-radius: 6px; font-size: .93em;
+      font-family: Consolas, Menlo, Monaco, "Courier New", ui-monospace, SFMono-Regular, monospace;
+    }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 0.97rem; }
+    th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: var(--tbl-head); }
+    hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+    ul { padding-left: 1.2rem; }
+    ol { padding-left: 1.2rem; }
+    input[type="checkbox"] { transform: scale(1.05); margin-right: 6px; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🧭 Squidで「<code>http_port 8080</code>」と「<code>https_port 8082</code>」を使い分ける</h1>
+  </header>
+
+  <blockquote>
+    <p>この記事では、<strong><code>http_port</code> と <code>https_port</code> の違い</strong>、<strong>クライアント側の設定方法</strong>、<strong>運用パターン</strong>、<strong>トラブル時の確認ポイント</strong>を解説します。</p>
+  </blockquote>
+
+  <h2>目次</h2>
+  <ol>
+    <li><a href="#http8080">1. <code>http_port 8080</code> の動作</a></li>
+    <li><a href="#https8082">2. <code>https_port 8082</code> の動作（SSL Bump/透過）</a></li>
+    <li><a href="#compare">3. <code>http_port</code> と <code>https_port</code> の比較表</a></li>
+    <li><a href="#ops">4. 実運用のおすすめ構成</a></li>
+    <li><a href="#client">5. クライアント設定の具体例</a></li>
+    <li><a href="#trouble">6. よくあるハマりどころ（チェックリスト）</a></li>
+    <li><a href="#samples">7. サンプル設定（そのまま流用可）</a></li>
+    <li><a href="#summary">8. まとめ</a></li>
+    <li><a href="#verify">付録：動作確認コマンド</a></li>
+  </ol>
+
+  <hr>
+
+  <h2 id="http8080">1. <code>http_port 8080</code> の動作</h2>
+  <p><strong>役割</strong>：標準的な <strong>HTTPプロキシ</strong>。ブラウザ/OSで明示プロキシを設定して利用します。<br>
+     <strong>HTTPSの扱い</strong>：<code>CONNECT</code> メソッドでトンネルを張り、中身は見えません。</p>
+
+  <p><strong>通信フロー（概念）</strong></p>
+  <pre><code>Client --HTTP--> Squid(http_port) --HTTP/HTTPS--> Web
+                └─ HTTPSはCONNECTでトンネル</code></pre>
+
+  <p><strong>リクエスト例（ブラウザ→Squid）</strong></p>
+  <pre><code>GET http://www.example.com/ HTTP/1.1
+Host: www.example.com</code></pre>
+
+<div style="text-align: center;"><img src="images/s2-1.png" alt="" width="640" height="312.4"></div><br>
+<div style="text-align: center;"><img src="images/s2-2.png" alt="" width="640" height="321.2"></div><br>
+
+  <p><strong>ポイント</strong></p>
+  <ul>
+    <li>クライアント〜Squid間は <strong>平文(HTTP)</strong>。</li>
+    <li><strong>証明書配布は不要</strong>（中身を見ないため）。</li>
+  </ul>
+
+  <hr>
+
+  <h2 id="https8082">2. <code>https_port 8082</code> の動作（SSL Bump/透過）</h2>
+  <p><strong>役割</strong>：<strong>TLS(HTTPS)をSquidで終端</strong>するためのポート。<br>
+     <strong>主な用途</strong>：<strong>SSL Bump（復号検査）</strong>、<strong>透過HTTPSプロキシ</strong>。</p>
+
+  <p><strong>通信フロー（概念）</strong></p>
+  <pre><code>Client --TLS(HTTPS)--> Squid(https_port) --TLS/HTTP--> Web
+                         └─ 必要に応じて復号(ssl_bump)</code></pre>
+
+<div style="text-align: center;"><img src="images/s2-3.png" alt="" width="610.4" height="314.4"></div><br>
+<div style="text-align: center;"><img src="images/s2-4.png" alt="" width="606.4" height="308.8"></div><br>
+
+  <p><strong>ポイント</strong></p>
+  <ul>
+    <li>クライアント〜Squid間も <strong>暗号化</strong>。</li>
+    <li><strong>ルートCA証明書をクライアントへ配布・信頼</strong>させる必要あり（bumpする場合）。</li>
+    <li>透過運用時は L3/L4 で <code>443 → 8082</code> にリダイレクト。</li>
+    <li>Bumpについては詳しくは<a href="squid_adcs_ssl_bump.html">こちら</a>から</li>
+  </ul>
+
+  <hr>
+
+  <h2 id="compare">3. <code>http_port</code> と <code>https_port</code> の比較表</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>比較項目</th>
+        <th><code>http_port 8080</code></th>
+        <th><code>https_port 8082</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>主な用途</td>
+        <td>通常のHTTP/HTTPSプロキシ</td>
+        <td>SSL Bump / 透過HTTPS</td>
+      </tr>
+      <tr>
+        <td>クライアント接続</td>
+        <td>HTTP</td>
+        <td>HTTPS (TLS)</td>
+      </tr>
+      <tr>
+        <td>クライアント設定</td>
+        <td>明示プロキシ</td>
+        <td>明示 or 透過（FW/NAT必須）</td>
+      </tr>
+      <tr>
+        <td>暗号化（Client→Squid）</td>
+        <td>なし（平文）</td>
+        <td>あり（TLS）</td>
+      </tr>
+      <tr>
+        <td>証明書配布</td>
+        <td>不要</td>
+        <td>必要（中間CA）</td>
+      </tr>
+      <tr>
+        <td>HTTPSの中身可視化</td>
+        <td>不可（CONNECTのトンネル）</td>
+        <td>可能（bump時）</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <h2 id="ops">4. 実運用のおすすめ構成</h2>
+  <h3>A. シンプル（HTTPS検査なし）</h3>
+  <ul>
+    <li><strong>目的</strong>：ログ/キャッシュ/URLフィルタを軽く入れたい</li>
+    <li><strong>設定</strong>：<code>http_port 8080</code> のみ</li>
+    <li><strong>メリット</strong>：証明書配布不要、トラブル少なめ</li>
+  </ul>
+
+  <h3>B. 検査あり（SSL Bump）</h3>
+  <ul>
+    <li><strong>目的</strong>：HTTPSの内容を可視化・制御（マルウェア検査等）</li>
+    <li><strong>設定</strong>：<code>http_port 8080</code> + <code>https_port 8082 ssl-bump ...</code></li>
+    <li><strong>要件</strong>：クライアントに <strong>ルートCA証明書配布</strong>、ポリシー説明</li>
+  </ul>
+
+  <h3>C. 透過（ユーザー設定なしで強制プロキシ）</h3>
+  <ul>
+    <li><strong>目的</strong>：端末側設定なしで統制</li>
+    <li><strong>設定</strong>：FW/ルータで <code>tcp/443 → 8082</code>、<code>tcp/80 → 3128/8080</code> などにNAT</li>
+    <li><strong>要件</strong>：ネットワーク側のリダイレクト定義 + CA配布（HTTPS透過時）</li>
+  </ul>
+
+  <hr>
+
+  <h2 id="client">5. クライアント設定の具体例</h2>
+  <h3>明示プロキシ（ブラウザ/OS）</h3>
+  <ul>
+    <li><strong><code>http_port</code> のみ</strong><br>
+      HTTPプロキシ：<code>192.168.100.205:8080</code><br>
+      HTTPSプロキシ：<code>192.168.100.205:8080</code>
+    </li>
+    <li><strong><code>https_port</code> をHTTPSプロキシに</strong><br>
+      HTTPSプロキシ：<code>192.168.100.205:8082</code><br>
+      （併用するなら HTTP 側は <code>192.168.100.205:8080</code>）<br>
+      <strong>中間CA証明書を信頼ストアに配布</strong>（GPO/MDMなど）
+    </li>
+  </ul>
+
+  <h3>透過（Transparent）</h3>
+  <ul>
+    <li>端末側は <strong>プロキシ設定なし</strong>。</li>
+    <li>ネットワーク機器で <strong>80/443 → Squidのポートへ転送</strong>。</li>
+  </ul>
+
+  <hr>
+
+  <h2 id="trouble">6. よくあるハマりどころ（チェックリスト）</h2>
+  <ul>
+    <li><label><input type="checkbox"> <strong>ルートCA配布漏れ</strong>：ブラウザが証明書エラーを出す</label></li>
+    <li><label><input type="checkbox"> <strong>peer-link / 経路のVLAN未通過</strong>（L2冗長時）：HTTPSだけ通らないなど</label></li>
+    <li><label><input type="checkbox"> <strong>SNI未取得/ServerName未一致</strong>：bumpルールのマッチミス</label></li>
+    <li><label><input type="checkbox"> <strong>FW/NAT未設定</strong>（透過時）：443がSquidに届いていない</label></li>
+    <li><label><input type="checkbox"> <strong>ACLS/ssl_bumpポリシー順序</strong>：<code>bump</code> / <code>splice</code> の意図せぬ適用</label></li>
+    <li><label><input type="checkbox"> <strong>キャッシュ/証明書再生成の手順漏れ</strong>：検証時に古い証跡が残る</label></li>
+  </ul>
+
+  <hr>
+
+  <h2 id="samples">7. サンプル設定（そのまま流用可）</h2>
+
+  <h3>7.1 最小構成：明示プロキシ（検査なし）</h3>
+  <pre><code># /etc/squid/squid.conf
+http_port 8080
+
+# 例: 最低限のACL
+acl allowed src 192.168.0.0/16
+http_access allow allowed
+http_access deny all</code></pre>
+
+  <h3>7.2 併用構成：明示 + SSL Bump</h3>
+  <pre><code># /etc/squid/squid.conf
+http_port 8080
+
+https_port 8082 ssl-bump   cert=/etc/squid/ssl_cert/myCA.pem   key=/etc/squid/ssl_cert/myCA.key   generate-host-certificates=on   dynamic_cert_mem_cache_size=4MB
+
+# Bump ポリシー例
+acl step1 at_step SslBump1
+ssl_bump peek step1
+ssl_bump bump all
+
+# 基本のアクセス制御
+acl allowed src 192.168.0.0/16
+http_access allow allowed
+http_access deny all
+
+# 証明書DB（初回のみ）
+# /etc/squid/ssl_cert/ssl_db を作る
+# /usr/lib64/squid/security_file_certgen -c -s /etc/squid/ssl_cert/ssl_db -M 4MB</code></pre>
+
+  <h3>7.3 透過HTTPS（ネットワークで443→8082転送）</h3>
+  <pre><code># /etc/squid/squid.conf
+http_port 3128 intercept
+https_port 8082 intercept ssl-bump   cert=/etc/squid/ssl_cert/myCA.pem   key=/etc/squid/ssl_cert/myCA.key   generate-host-certificates=on
+
+acl step1 at_step SslBump1
+ssl_bump peek step1
+ssl_bump bump all
+
+acl allowed src 192.168.0.0/16
+http_access allow allowed
+http_access deny all</code></pre>
+  <p>※ 透過は <strong>FW/NATルール</strong> が必須。端末のデフォルトゲートウェイ上で実装するのが一般的。</p>
+
+  <hr>
+
+  <h2 id="summary">8. まとめ</h2>
+  <ul>
+    <li><strong>通常利用（検査なし）</strong>：<code>http_port 8080</code> だけでOK。証明書配布なしで簡単。</li>
+    <li><strong>検査あり</strong>：<code>https_port 8082</code> でSSL Bump。<strong>ルートCA配布が必須</strong>。</li>
+    <li><strong>透過</strong>：ネットワーク転送(443→8082)が必要。<strong>NAT/FWルール</strong>と<strong>ポリシー順序</strong>に注意。</li>
+  </ul>
+  <p>迷ったら：まずは <strong><code>http_port 8080</code> 単独</strong> で安定させる → その後、要件に応じて <code>https_port</code>（SSL Bump/透過）を段階的に追加するのがおすすめ。</p>
+
+  <hr>
+
+  <h2 id="verify">付録：動作確認コマンド（管理端末で）</h2>
+  <pre><code># HTTP越しにGoogleのヘッダ取得（明示プロキシ8080）
+curl -I -x http://192.168.100.205:8080 http://www.google.com
+
+# HTTPSをCONNECTで通す（明示プロキシ8080）
+curl -I -x http://192.168.100.205:8080 https://www.google.com
+
+# 直接HTTPSでSquidへ（https_port 8082 にTLSで接続）
+openssl s_client -connect 192.168.100.205:8082 -servername www.google.com </dev/null
+
+# プロキシ経由でサーバ証明書のSANを確認（ssl-bump時）
+openssl s_client -proxy 192.168.100.205:8082   -connect www.google.com:443 -servername www.google.com -showcerts </dev/null   | openssl x509 -noout -text | grep -A2 "Subject Alternative Name"</code></pre>
+</div>
+</body>
+</html>

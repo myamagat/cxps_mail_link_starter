@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>vDMZでのデフォルトルート問題</title>
+  <style>
+    body { font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, Arial, sans-serif; background:#ffffff; color:#111; line-height:1.75; margin:0; }
+    main { max-width: 960px; margin: 24px auto; padding: 24px; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); background:#fff; }
+    h1 { color:#0b4a6f; margin:0 0 12px; }
+    h2 { color:#0b4a6f; margin:24px 0 8px; }
+    h3 { color:#0b4a6f; margin:16px 0 6px; }
+    p { margin: 0 0 12px; }
+    /* High contrast for ASCII diagrams */
+    pre { background:#ffffff; color:#111; border:1px solid #cbd5e1; border-radius:8px; padding:12px; overflow:auto; }
+    pre code { background:none; font-family: Consolas, Menlo, Monaco, "Courier New", monospace; font-size:15px; line-height:1.35; white-space:pre; display:block; }
+    table { width:100%; border-collapse:collapse; margin: 12px 0; font-size: 14px; }
+    th, td { border:1px solid #e5e7eb; padding:8px; text-align:left; }
+    th { background:#f1f5f9; }
+    .note { background:#e0f2fe; border-left:6px solid #0ea5e9; padding:12px; border-radius:6px; margin:12px 0; }
+    .merit { background:#dcfce7; border-left:6px solid #22c55e; padding:12px; border-radius:6px; margin:12px 0; }
+    .demerit { background:#fee2e2; border-left:6px solid #ef4444; padding:12px; border-radius:6px; margin:12px 0; }
+    .summary { background:#f8fafc; border: 2px solid #e2e8f0; padding: 12px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>🌐 vDMZでのデフォルトルート問題</h1>
+  <p><strong>概要:</strong> vDMZ 環境におけるデフォルトルート設定の誤りが原因で、特定セグメントの端末がインターネットへ到達できない問題と、その対応策を整理します。</p>
+
+  <h2>🗺️ ネットワーク構成図</h2>
+  <pre><code>                +----------------------+
+                |         ASA          |
+                |     192.168.100.254  |
+                +----------+-----------+
+                           |
+===========================+================================ 192.168.100.0/24
+      .100                 |                        .241
+    +------+                                          +-----------+
+    | PC1 |                                          |  ISR-G2   |---- DMVPN ---- PC3
+    +------+                                          +-----------+
+                                                        |
+                                                        | .254
+===========================+================================ 192.168.110.0/24
+                                                        | .100
+                                                     +--------+
+                                                     |  PC2   |
+                                                     +--------+</code></pre>
+
+  <table>
+    <tr><th>機器名</th><th>インターフェース</th><th>IPアドレス</th><th>備考</th></tr>
+    <tr><td>ASA</td><td>outside</td><td>192.168.100.254</td><td>インターネット向けNAT実施</td></tr>
+    <tr><td>PC1</td><td>NIC</td><td>192.168.100.100</td><td>DGW = ASA</td></tr>
+    <tr><td>ISR-G2</td><td>Gi0/0</td><td>192.168.100.241</td><td>DMVPNルータ</td></tr>
+    <tr><td>PC2</td><td>NIC</td><td>192.168.110.100</td><td>DGW = ISR-G2</td></tr>
+  </table>
+
+  <h2>⚙️ 動作のポイント</h2>
+  <h3>PC1側</h3>
+  <ul>
+    <li>デフォルトゲートウェイ (DGW): ASA</li>
+    <li>ASA で NAT が設定されており、インターネットアクセス可能</li>
+  </ul>
+  <h3>PC2側</h3>
+  <ul>
+    <li>デフォルトゲートウェイ (DGW): ISR-G2</li>
+    <li>ISR-G2 は DMVPN 用の mGRE トンネルを確立しており、デフォルトルートは mGRE 確立のために使用中</li>
+    <li>結果として、ASA経由でNAT通信ができない</li>
+  </ul>
+
+  <div class="note">ヒント: SharePointのダークテーマでも読めるよう、背景は白、文字色は黒の固定としています。</div>
+
+  <h2>🧭 対応方法</h2>
+
+  <h3>✅ 方法1：L3スイッチを新規導入（推奨）</h3>
+  <pre><code>         +-----------+
+         |    ASA    |
+         | 100.254   |
+         +-----+-----+
+               |
+        +------+------+
+        |   L3 Switch |
+        |  DGW → ASA  |
+        +---+-----+---+
+            |     |
+        +---+     +---+
+        | PC1|    |PC2|
+        +----+    +---+</code></pre>
+
+  <p>新規L3SWを導入し、デフォルトルートをASA方向へ設定。PC2はL3SWをDGWに指定することで、ASA経由でのインターネット通信が可能。</p>
+  <div class="merit"><strong>メリット:</strong> シンプルかつ保守性が高い / ルーティング統一化が容易</div>
+  <div class="demerit"><strong>デメリット:</strong> 機器追加コストが発生</div>
+
+  <h3>⚠️ 方法2：ISR-G2でmGRE専用ルートを設定（非推奨）</h3>
+  <p>ISR-G2 のデフォルトルートは ASA 方向に設定し、mGRE トンネル確立用の IP アドレス範囲を個別スタティックルートとして指定。</p>
+  <div class="note">この方法は、ユーザごとに異なるプロバイダIPレンジ情報を事前に入手する必要があり、運用が煩雑で推奨されません。</div>
+
+  <h2>📘 まとめ</h2>
+  <table>
+    <tr><th>項目</th><th>方法1：L3SW導入</th><th>方法2：ISR-G2調整</th></tr>
+    <tr><td>コスト</td><td>中</td><td>低</td></tr>
+    <tr><td>保守性</td><td>高</td><td>低</td></tr>
+    <tr><td>推奨度</td><td>高</td><td>低</td></tr>
+  </table>
+
+  <div class="summary">
+    <strong>結論:</strong> vDMZ構成では、ASAとDMVPNルータ間でのデフォルトルート競合を避けるため、L3スイッチを導入して ASA 経由のルーティングを統一する構成が最も安定的です。
+  </div>
+</main>
+</body>
+</html>
