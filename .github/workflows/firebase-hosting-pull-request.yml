@@ -1,4 +1,4 @@
-name: Deploy to Firebase Hosting on PR
+ï»¿name: Deploy to Firebase Hosting on PR
 on: pull_request
 permissions:
   checks: write
@@ -12,27 +12,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # ‡@ Node / npm / npx ‚Ì‘¶İŠm”FiƒƒO‚Åƒo[ƒWƒ‡ƒ“‚ğo‚·j
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Diagnose Node toolchain
-        run: |
-          node -v
-          npm -v
-          npx --version
-
-      # ‡A iÃ“IƒTƒCƒg‚È‚ç•s—vjƒrƒ‹ƒh‚ª•K—v‚È‚çƒAƒ“ƒRƒƒ“ƒg‚µ‚Ä‚­‚¾‚³‚¢
+      # é™çš„ã‚µã‚¤ãƒˆãªã‚‰ãƒ“ãƒ«ãƒ‰ä¸è¦ã€‚å¿…è¦ãªå ´åˆã®ã¿æœ‰åŠ¹åŒ–
+      # - uses: actions/setup-node@v4
+      #   with:
+      #     node-version: "20"
       # - run: npm ci && npm run build
 
-      # ‡B ƒfƒvƒƒC
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-
-          # © ‚±‚±‚ªˆê”Ôd—vFƒV[ƒNƒŒƒbƒg–¼‚ª GitHub ‘¤‚ÆŠ®‘Sˆê’v‚µ‚Ä‚¢‚é‚©ÄŠm”F
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GCP_CXJAPANCOLLABOR_NPRD_88957 }}
-
           projectId: gcp-cxjapancollabor-nprd-88957
           target: staging
           channelId: pr-${{ github.event.number }}
