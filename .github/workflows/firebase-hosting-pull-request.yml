@@ -1,5 +1,12 @@
 ﻿name: Deploy to Firebase Hosting on PR
-on: pull_request
+on:
+  pull_request:
+  workflow_dispatch:   # ← 追加：手動実行
+  push:                 # ← 追加：保険として push でも動かす
+    branches:
+      - main
+      - feature/update-article
+
 permissions:
   checks: write
   contents: read
@@ -7,16 +14,10 @@ permissions:
 
 jobs:
   build_and_preview:
-    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      # 静的サイトならビルド不要。必要な場合のみ有効化
-      # - uses: actions/setup-node@v4
-      #   with:
-      #     node-version: "20"
-      # - run: npm ci && npm run build
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
@@ -24,5 +25,5 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GCP_CXJAPANCOLLABOR_NPRD_88957 }}
           projectId: gcp-cxjapancollabor-nprd-88957
           target: staging
-          channelId: pr-${{ github.event.number }}
+          channelId: pr-${{ github.event.number || 'manual' }}
           expires: 7d
