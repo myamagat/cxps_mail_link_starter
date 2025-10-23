@@ -1,7 +1,7 @@
 name: Promote staging → production (clone)
 
 on:
-  # 手動ボタンで実行（Inputsを変えれば別チャンネルにも昇格可能）
+  # 手動で実行（push/PRトリガは外す）
   workflow_dispatch:
     inputs:
       source:
@@ -13,49 +13,65 @@ on:
 
 jobs:
   promote:
-    # （任意）本番承認ゲートを使う場合は Environments で `production` を作成し Required reviewers を設定
-    environment: production
     runs-on: ubuntu-latest
+    # （任意）本番承認ゲートを使うなら Environments で production を作成し Required reviewers を設定
+    environment: production
+
+    # ← secrets を env にマッピングしてから使う
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      FIREBASE_TOKEN:          ${{ secrets.FIREBASE_TOKEN }}
+      STAGING_SITE_ID:         ${{ secrets.STAGING_SITE_ID }}
+      PRODUCTION_SITE_ID:      ${{ secrets.PRODUCTION_SITE_ID }}
+      FIREBASE_PROJECT_ID:     ${{ secrets.FIREBASE_PROJECT_ID }}
 
     steps:
       - name: Install Firebase CLI
         run: npm i -g firebase-tools
 
-      # 認証：どちらか一方でOK
-      # 1) サービスアカウントJSON（推奨）… Secrets: FIREBASE_SERVICE_ACCOUNT にJSON文字列を保存
+      # SA があればそれで認証
       - name: Auth via Service Account
-        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
+        if: ${{ env.FIREBASE_SERVICE_ACCOUNT != '' }}
         run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > $RUNNER_TEMP/sa.json
-          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> $GITHUB_ENV
+          echo "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
 
-      # 2) CLIトークン … Secrets: FIREBASE_TOKEN を保存（`firebase login:ci` で作成）
+      # SA が無ければ FIREBASE_TOKEN を使う
       - name: Auth via FIREBASE_TOKEN
-        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT == '' && secrets.FIREBASE_TOKEN != '' }}
-        run: echo "FIREBASE_TOKEN=${{ secrets.FIREBASE_TOKEN }}" >> $GITHUB_ENV
+        if: ${{ env.FIREBASE_SERVICE_ACCOUNT == '' && env.FIREBASE_TOKEN != '' }}
+        run: echo "FIREBASE_TOKEN=$FIREBASE_TOKEN" >> "$GITHUB_ENV"
 
       - name: Set variables
         shell: bash
         run: |
-          # Secrets から既定のサイトIDを受け取る（リポジトリの Settings → Secrets に登録しておく）
-          : "${STAGING_SITE_ID:=${{ secrets.STAGING_SITE_ID }}}"
-          : "${PRODUCTION_SITE_ID:=${{ secrets.PRODUCTION_SITE_ID }}}"
-          : "${FIREBASE_PROJECT_ID:=${{ secrets.FIREBASE_PROJECT_ID }}}"
-
-          # 入力が空なら <SITE_ID>:live を既定にする
+          set -euo pipefail
           SRC="${{ github.event.inputs.source }}"
           TGT="${{ github.event.inputs.target }}"
-          if [ -z "$SRC" ]; then SRC="${STAGING_SITE_ID}:live"; fi
-          if [ -z "$TGT" ]; then TGT="${PRODUCTION_SITE_ID}:live"; fi
+          # 既定は <STAGING_SITE_ID>:live → <PRODUCTION_SITE_ID>:live
+          if [ -z "${SRC}" ]; then SRC="${STAGING_SITE_ID}:live"; fi
+          if [ -z "${TGT}" ]; then TGT="${PRODUCTION_SITE_ID}:live"; fi
+          echo "SRC=$SRC" >> "$GITHUB_ENV"
+          echo "TGT=$TGT" >> "$GITHUB_ENV"
 
-          echo "SRC=$SRC" >> $GITHUB_ENV
-          echo "TGT=$TGT" >> $GITHUB_ENV
-          echo "FIREBASE_PROJECT_ID=$FIREBASE_PROJECT_ID" >> $GITHUB_ENV
+      - name: Preflight checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          err=0
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ] && [ -z "$FIREBASE_TOKEN" ]; then
+            echo "::error title=Auth missing::Set FIREBASE_SERVICE_ACCOUNT or FIREBASE_TOKEN"
+            err=1
+          fi
+          if [ -z "$STAGING_SITE_ID" ] || [ -z "$PRODUCTION_SITE_ID" ]; then
+            echo "::error title=Site IDs missing::Set STAGING_SITE_ID and PRODUCTION_SITE_ID"
+            err=1
+          fi
+          if [ "$err" -ne 0 ]; then exit 1; fi
 
       - name: Show current staging releases (sanity check)
         run: |
           if [ -n "$FIREBASE_PROJECT_ID" ]; then PROJ="--project $FIREBASE_PROJECT_ID"; fi
-          firebase hosting:releases:list --site "${STAGING_SITE_ID}" $PROJ --limit 5 || true
+          firebase hosting:releases:list --site "$STAGING_SITE_ID" $PROJ --limit 5 || true
 
       - name: Clone staging live → production live
         run: |
