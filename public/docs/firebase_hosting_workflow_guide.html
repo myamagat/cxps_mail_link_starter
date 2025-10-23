@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Firebase Hosting 運用ガイド：PR → ステージング → 本番（clone昇格対応）</title>
+  <style>
+    body { font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, Arial, sans-serif; background:#ffffff; color:#111; line-height:1.75; margin:0; }
+    main { max-width: 960px; margin: 24px auto; padding: 24px; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); background:#fff; }
+    h1 { color:#0b4a6f; margin:0 0 12px; }
+    h2 { color:#0b4a6f; margin:24px 0 8px; }
+    h3 { color:#0b4a6f; margin:16px 0 6px; }
+    p { margin: 0 0 12px; }
+    ul { margin: 0 0 12px 20px; }
+    pre { background:#ffffff; color:#111; border:1px solid #cbd5e1; border-radius:8px; padding:12px; overflow:auto; }
+    pre code { background:none; font-family: Consolas, Menlo, Monaco, "Courier New", monospace; font-size:15px; line-height:1.35; white-space:pre; display:block; }
+    table { width:100%; border-collapse:collapse; margin: 12px 0; font-size: 14px; }
+    th, td { border:1px solid #e5e7eb; padding:8px; text-align:left; }
+    th { background:#f1f5f9; }
+    .note { background:#e0f2fe; border-left:6px solid #0ea5e9; padding:12px; border-radius:6px; margin:12px 0; }
+    .merit { background:#dcfce7; border-left:6px solid #22c55e; padding:12px; border-radius:6px; margin:12px 0; }
+    .demerit { background:#fee2e2; border-left:6px solid #ef4444; padding:12px; border-radius:6px; margin:12px 0; }
+    .summary { background:#f8fafc; border: 2px solid #e2e8f0; padding: 12px; border-radius: 8px; }
+    .kbd { display:inline-block; padding:1px 6px; border:1px solid #cbd5e1; border-bottom-width:2px; border-radius:4px; background:#fff; font-family: Consolas, Menlo, Monaco, "Courier New", monospace; font-size: 90%; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>🚀 Firebase Hosting 運用ガイド（PR → Staging → 本番）</h1>
+  <p><strong>概要:</strong> GitHub でHTMLコンテンツを共同開発し、<span class="kbd">PR作成 → ステージング自動デプロイ → 確認 → マージ → 本番</span> の流れで安全に反映するための手順を、<strong>clone昇格</strong>にも対応した形でまとめます。</p>
+
+  <h2>🧭 全体フロー</h2>
+  <pre><code>開発者ローカル                GitHub / Actions                 Firebase Hosting
+────────────────────      ───────────────────────────      ───────────────────────
+1) 修正/動作確認           4) PR作成                          6) 本番反映
+2) stagingへ手動デプロイ → 5) Actionsがstagingへ自動反映  →   (a) 通常: mainマージでprodへデプロイ
+3) ブランチ作成/commit/push                                     (b) clone昇格: staging:live → prod:live</code></pre>
+
+  <h2>🛠 事前準備（確認）</h2>
+  <ul>
+    <li><code>.firebaserc</code> で <code>staging</code> / <code>production</code> ターゲットが設定済み</li>
+    <li><code>firebase.json</code> の <code>hosting</code> に <code>target</code> が定義済み（public/CSP等の設定共通）</li>
+    <li>GitHub Actions（例：<code>firebase-hosting-pull-request.yml</code> / <code>firebase-hosting-merge.yml</code>）が配置済み</li>
+    <li>（任意）<code>promote-prod.yml</code> を用意して <strong>clone昇格</strong> をボタン1つで実行できるようにする</li>
+  </ul>
+
+  <h2>① ステージングへデプロイ（ローカル確認）</h2>
+  <pre><code>firebase deploy --only hosting:staging</code></pre>
+  <p>ステージングURLで表示崩れ・リンク切れ・CSP違反などをチェックします。</p>
+
+  <h2>② 作業ブランチを作成 → 変更をコミット/プッシュ</h2>
+  <pre><code>git checkout -b feature/staging-deploy-YYYYMMDD
+# 変更を加える
+
+git add .
+git commit -m "Fix: top page content & staging check"
+git push -u origin feature/staging-deploy-YYYYMMDD</code></pre>
+
+  <h2>③ Pull Request（PR）を作成</h2>
+  <ol>
+    <li>GitHubのリポジトリ画面で <strong>Compare &amp; pull request</strong> をクリック</li>
+    <li>タイトル／説明（変更点・確認観点・スクショ）を記載し、<strong>Create pull request</strong></li>
+    <li>Actions が自動で <strong>staging</strong> にデプロイ（PRコメントにURLが付く場合あり）</li>
+  </ol>
+
+  <h2>④ ステージングを最終確認</h2>
+  <ul>
+    <li>想定どおり表示されるか、リンク・画像・埋め込み（SharePoint等）を再確認</li>
+    <li>チーム運用ならレビュー依頼（Reviewer 未指定でもPRは作成可能）</li>
+  </ul>
+
+  <h2>⑤ 本番反映（2通り）</h2>
+  <h3>A. 通常デプロイ（main へマージ）</h3>
+  <ol>
+    <li>全チェックが <strong>passed</strong> であることを確認</li>
+    <li><strong>Merge pull request</strong> → <strong>Confirm merge</strong></li>
+    <li>main への push をトリガに Actions が <strong>production</strong> へ自動デプロイ</li>
+  </ol>
+
+  <h3>B. clone昇格（staging と完全同一バイナリを prod に昇格）</h3>
+  <p>Actions の <code>Promote staging → production (clone)</code> ワークフローを <strong>Run workflow</strong>。既定は <code>&lt;STAGING_SITE_ID&gt;:live</code> → <code>&lt;PRODUCTION_SITE_ID&gt;:live</code> をクローンします。</p>
+  <pre><code># 参考：手動コマンド（同一プロジェクト内）
+firebase hosting:clone &lt;STAGING_SITE_ID&gt;:live &lt;PRODUCTION_SITE_ID&gt;:live --project &lt;PROJECT_ID&gt;</code></pre>
+  <div class="merit"><strong>メリット:</strong> 再ビルド不要・ステージングで確認したバージョンをそのまま本番へ。ロールバックも容易。</div>
+  <div class="demerit"><strong>注意:</strong> site ID と target 名は別概念。<code>hosting:clone</code> は site ID 指定です。<code>.firebaserc</code> の targets と取り違えないように。</div>
+
+  <h2>🔐 よくあるブロックと対処</h2>
+  <table>
+    <tr><th>現象</th><th>原因</th><th>対処</th></tr>
+    <tr>
+      <td>「At least 1 approving review is required」</td>
+      <td>main にレビュー必須の保護ルール / Rulesets</td>
+      <td>Reviewer に Approve 依頼 / 管理者バイパス許可 / Environments 側へ承認ゲートを移す</td>
+    </tr>
+    <tr>
+      <td>「Cannot change this locked branch」</td>
+      <td>Branch protection + Rulesets によるロック</td>
+      <td>Rulesets を確認し、バイパス又は一時緩和。組織管理者へ依頼が必要な場合あり</td>
+    </tr>
+    <tr>
+      <td>staging にデプロイされない</td>
+      <td>PR用Actionsが無効 / permissions不足 / target未設定</td>
+      <td>Actions有効化・Secrets設定・<code>.firebaserc</code> の targets を再確認</td>
+    </tr>
+  </table>
+
+  <h2>📌 付録：チェックリスト</h2>
+  <ul>
+    <li>PRタイトルは「内容＋日付」で統一（例：<code>Update: jumbo-frame article (2025-10-23)</code>）</li>
+    <li>Merge 後は不要になった feature ブランチを <strong>Delete branch</strong></li>
+    <li>SharePoint 埋め込み時は CSP の <code>frame-ancestors</code> を維持</li>
+  </ul>
+
+  <div class="summary">
+    <strong>結論:</strong> <em>PR → staging 自動デプロイ → 目視OK → マージ（または clone昇格）→ 本番</em> の型に揃えると、再現性が高く安全に運用できます。clone昇格を用意しておけば、「staging と完全同一で出す」要件にも即対応できます。
+  </div>
+</main>
+</body>
+</html>
