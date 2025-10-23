@@ -50,10 +50,16 @@
     window.sendLink = async () => {
       const email = document.getElementById('ml-email').value.trim();
       if (!allowDomain(email)) { alert("社内メールのみ許可されています"); return; }
+
+      // ★ 変更点：今アクセスしているドメインに合わせて戻り先を作る
+      //   例: stg で開いていれば stg に、本番で開いていれば本番に戻る
+      const redirectPath = "/login.html"; // 認証完了後に戻したい相対パス（必要に応じて変更）
+      const url = new URL(redirectPath, window.location.origin).toString();
+
       const acs = {
-        // 認証完了後の戻り先。トップに戻したい場合は "/" に変えてOK
-        url: "https://docs.cxj-collab.com/login.html",
+        url,                 // 例: https://<current-site>.web.app/login.html
         handleCodeInApp: true
+        // dynamicLinkDomain 等があればここに追加
       };
       try {
         await sendSignInLinkToEmail(auth, email, acs);
@@ -125,8 +131,8 @@
     <strong>管理者向けチェック</strong>
     <ol>
       <li>Authentication → サインイン方法：<b>Email link (passwordless)</b> を <b>ON</b>、<b>Email/Password</b> は <b>OFF</b></li>
-      <li>Authentication → 設定 → <b>Authorized domains</b>：<code>docs.cxj-collab.com</code> と <code>&lt;projectId&gt;.firebaseapp.com</code> を追加</li>
-      <li>メールリンクの戻り先（actionCodeSettings.url）：このファイル内を <code>https://docs.cxj-collab.com/login.html</code> か <code>/</code> に統一</li>
+      <li>Authentication → 設定 → <b>Authorized domains</b>：<code>&lt;projectId&gt;.firebaseapp.com</code> / <code>&lt;site-id&gt;.web.app</code>（stg と prod の両方・カスタムドメインがあればそれも）を追加</li>
+      <li>メールリンクの戻り先（actionCodeSettings.url）：このファイルは <code>window.location.origin</code> 基準で動作（stg→stg / prod→prod）</li>
       <li>必要に応じて ALLOWED_DOMAINS（例: <code>["cisco.com"]</code>）を調整</li>
     </ol>
   </div>
