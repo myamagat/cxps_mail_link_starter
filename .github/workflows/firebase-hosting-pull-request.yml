@@ -1,52 +1,29 @@
-name: Deploy to Firebase Hosting on PR
-
+﻿name: Deploy to Firebase Hosting on PR
 on:
   pull_request:
-    branches: [ main ]
+  workflow_dispatch:   # ← 追加：手動実行
+  push:                 # ← 追加：保険として push でも動かす
+    branches:
+      - main
+      - feature/update-article
+
+permissions:
+  checks: write
+  contents: read
+  pull-requests: write
 
 jobs:
   build_and_preview:
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      # プロジェクトによっては build 不要なケースもあるため、失敗しても続行
-      - name: Install deps
-        run: npm ci || true
-      - name: Build (optional)
-        run: npm run build || true
-
-      - name: Deploy to Firebase Hosting (staging: live)
-        uses: FirebaseExtended/action-hosting-deploy@v0
+      - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          channelId: live
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GCP_CXJAPANCOLLABOR_NPRD_88957 }}
+          projectId: gcp-cxjapancollabor-nprd-88957
           target: staging
-
-      # --- ここから 追加: URLを明示表示（ログ & Summary） ---
-      - name: Show deployed URLs
-        if: always()
-        run: |
-          echo ""
-          echo "✅ Deploy completed successfully!"
-          echo ""
-          echo "📍 URLs:"
-          echo "  • Staging:     https://stg.docs.cxj-collab.com"
-          echo "  • Default:     https://gcp-cxjapancollabor-nprd-88957-stg.web.app"
-          echo ""
-          echo "Staging (カスタムドメイン) にアクセスして内容を確認してください。"
-
-      - name: Add summary
-        if: always()
-        run: |
-          echo "### ✅ Firebase Hosting Deploy Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Staging:** [https://stg.docs.cxj-collab.com](https://stg.docs.cxj-collab.com)" >> $GITHUB_STEP_SUMMARY
-          echo "- **Default:** [https://gcp-cxjapancollabor-nprd-88957-stg.web.app](https://gcp-cxjapancollabor-nprd-88957-stg.web.app)" >> $GITHUB_STEP_SUMMARY
+          channelId: pr-${{ github.event.number || 'manual' }}
+          expires: 7d
