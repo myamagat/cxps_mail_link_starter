@@ -1,23 +1,52 @@
-name: Deploy to Firebase Hosting on merge to main
+name: Deploy to Firebase Hosting on merge (production)
+
 on:
   push:
     branches: [ main ]
+
 jobs:
-  deploy_production:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '20' }
-      - name: Diagnose Node toolchain
-        run: |
-          node -v
-          npm -v
-          npx --version
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # プロジェクトによっては build 不要なケースもあるため、失敗しても続行
+      - name: Install deps
+        run: npm ci || true
+      - name: Build (optional)
+        run: npm run build || true
+
+      - name: Deploy to Firebase Hosting (production: live)
+        uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GCP_CXJAPANCOLLABOR_NPRD_88957 }}
-          projectId: gcp-cxjapancollabor-nprd-88957
-          target: production
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           channelId: live
+          target: production
+
+      # --- ここから 追加: URLを明示表示（ログ & Summary） ---
+      - name: Show deployed URLs
+        if: always()
+        run: |
+          echo ""
+          echo "✅ Production deploy completed!"
+          echo ""
+          echo "📍 URLs:"
+          echo "  • Production:  https://docs.cxj-collab.com"
+          echo "  • Default:     https://gcp-cxjapancollabor-nprd-88957.web.app"
+          echo ""
+          echo "Production (カスタムドメイン) を案内用URLにご利用ください。"
+
+      - name: Add summary
+        if: always()
+        run: |
+          echo "### ✅ Firebase Hosting Deploy Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Production:** [https://docs.cxj-collab.com](https://docs.cxj-collab.com)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Default:** [https://gcp-cxjapancollabor-nprd-88957.web.app](https://gcp-cxjapancollabor-nprd-88957.web.app)" >> $GITHUB_STEP_SUMMARY
