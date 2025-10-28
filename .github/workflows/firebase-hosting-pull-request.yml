@@ -22,7 +22,7 @@ jobs:
       - name: Build (optional)
         run: npm run build || true
 
-      - name: Deploy to Firebase Hosting (staging: live)
+      - name: "Deploy to Firebase Hosting (staging: live)"
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
