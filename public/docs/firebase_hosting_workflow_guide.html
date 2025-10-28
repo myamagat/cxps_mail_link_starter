@@ -50,7 +50,7 @@
 
   <h2>② 作業ブランチを作成 → 変更をコミット/プッシュ</h2>
   <pre><code>git checkout -b feature/staging-deploy-YYYYMMDD
-# 変更を加える
+# 「YYYYMMDD」はわかりやすい名前にする
 
 git add .
 git commit -m "Fix: top page content & staging check"
@@ -67,13 +67,25 @@ git push -u origin feature/staging-deploy-YYYYMMDD</code></pre>
 
   <h2>④ ステージングを最終確認</h2>
   <ul>
-    <li>ステージングURLは https://stg.docs.cxj-collab.com こちら</li>
-    <li>ここで想定どおり表示されるか、リンク・画像・埋め込み（SharePoint等）を再確認</li>
+    <li>ステージングURLはこちら https://stg.docs.cxj-collab.com</li>
+    <li>ステージングURL(上記)から自身のメールアドレスを入力</li>
+    <li>認証後、ここで想定どおり表示されるか、リンク・画像・埋め込み（SharePoint等）を再確認</li>
     <li>チーム運用ならレビュー依頼（Reviewer 未指定でもPRは作成可能）</li>
   </ul>
 
   <h2>⑤ 本番反映（2通り）</h2>
   <h3>A. 通常デプロイ（main へマージ）</h3>
+
+  <h3>「Open a pull request」画面で「Add a title」と「Add a description」を入力 (例: PR YYYYMMDD-1)後「Create pull request」を押す</h3>
+
+  <div><img src="images/g2-2.png" alt="" width="467.5" height="343"></div><br>
+
+  <div><img src="images/g2-3.png" alt="" width="474" height="239"></div><br>
+
+  <div><img src="images/g2-4.png" alt="" width="461.5" height="268.5"></div><br>
+
+  <div><img src="images/g2-5.png" alt="" width="474" height="201.5"></div>
+
   <ol>
     <li>全チェックが <strong>passed</strong> であることを確認</li>
     <li><strong>Merge pull request</strong> → <strong>Confirm merge</strong></li>
