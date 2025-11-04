@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>固定資産と減価償却の基礎</title>
+  <style>
+    body { font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, Arial, sans-serif; background:#ffffff; color:#111; line-height:1.75; margin:0; }
+    main { max-width: 960px; margin: 24px auto; padding: 24px; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); background:#fff; }
+    h1 { color:#0b4a6f; margin:0 0 12px; }
+    h2 { color:#0b4a6f; margin:24px 0 8px; }
+    h3 { color:#0b4a6f; margin:16px 0 6px; }
+    p { margin: 0 0 12px; }
+    pre { background:#ffffff; color:#111; border:1px solid #cbd5e1; border-radius:8px; padding:12px; overflow:auto; }
+    pre code { background:none; font-family: Consolas, Menlo, Monaco, "Courier New", monospace; font-size:15px; line-height:1.35; white-space:pre; display:block; }
+    table { width:100%; border-collapse:collapse; margin: 12px 0; font-size: 14px; }
+    th, td { border:1px solid #e5e7eb; padding:8px; text-align:left; }
+    th { background:#f1f5f9; }
+    .note { background:#e0f2fe; border-left:6px solid #0ea5e9; padding:12px; border-radius:6px; margin:12px 0; }
+    .merit { background:#dcfce7; border-left:6px solid #22c55e; padding:12px; border-radius:6px; margin:12px 0; }
+    .demerit { background:#fee2e2; border-left:6px solid #ef4444; padding:12px; border-radius:6px; margin:12px 0; }
+    .summary { background:#f8fafc; border: 2px solid #e2e8f0; padding: 12px; border-radius: 8px; }
+    .small { font-size: 13px; color:#374151; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>🏢 固定資産と減価償却の基礎まとめ</h1>
+  <p class="small"><strong>ねらい：</strong> 会計初心者でも「なにを・どこに・どう表示するか」が一目でわかるように、固定資産と減価償却のポイントを図表で整理します。</p>
+
+  <h2>🧱 固定資産とは</h2>
+  <p>企業が <strong>1年以上</strong> の長期にわたり使用する、事業活動のための資産を指します。短期売買目的の流動資産とは区別します。</p>
+  <table>
+    <tr><th>区分</th><th>例</th><th>ポイント</th></tr>
+    <tr><td>有形固定資産</td><td>建物、機械、車両、備品、土地</td><td>物理的な形がある資産。土地は原則償却しない</td></tr>
+    <tr><td>無形固定資産</td><td>ソフトウェア、特許権、商標権</td><td>形のない権利等。耐用年数に基づき償却</td></tr>
+    <tr><td>投資その他の資産</td><td>関係会社株式、長期貸付金、投資不動産等</td><td>投資・長期保有目的</td></tr>
+  </table>
+
+  <div class="note"><strong>用語メモ：</strong> <em>取得原価</em>＝購入価格＋付随費用（運搬費、据付費など）。帳簿は取得原価を起点に管理します。</div>
+
+  <h2>⚙️ 減価償却の意義</h2>
+  <p>固定資産の価値は使用や時間経過で減少します。その減少分を<strong>使用期間にわたって費用配分</strong>するのが減価償却です。</p>
+  <ul>
+    <li><strong>目的：</strong> 取得時に一括費用化せず、<u>各会計期間の成果と対応</u>させて正しい損益を表示する（期間対応の原則）。</li>
+    <li><strong>代表的な方法：</strong> 定額法、定率法、（無形資産の）定額法 等。</li>
+  </ul>
+  <pre><code>例）100万円の機械を耐用年数10年・残存価額ゼロ・定額法
+各期の減価償却費＝1,000,000 ÷ 10 ＝ 100,000円/年</code></pre>
+
+  <h2>🧾 BS（貸借対照表）上の表示：固定資産と減価償却累計額</h2>
+  <p>表示には「<strong>間接表示</strong>」と「<strong>直接表示</strong>」の2方式があります。</p>
+
+  <h3>🪞 1）間接表示（一般的）</h3>
+  <ul>
+    <li>固定資産は<strong>取得原価</strong>のまま表示し、直下に<strong>減価償却累計額</strong>を<strong>控除項目（マイナス）</strong>で並記。</li>
+    <li>帳簿では「固定資産（取得価額）」と「減価償却累計額」を<strong>別勘定</strong>で管理。</li>
+  </ul>
+  <pre><code>（貸借対照表：資産の部）
+  有形固定資産
+    建物　　　　　　　　　　100,000
+    減価償却累計額　　　　　▲30,000
+    建物（純額）　　　　　　  70,000
+</code></pre>
+
+  <h3>🧮 2）直接表示（純額表示＋注記）</h3>
+  <ul>
+    <li>「固定資産 − 減価償却累計額 ＝ 純額」を<strong>1行表示</strong>。</li>
+    <li><strong>注記</strong>（脚注）で「取得価額」「減価償却累計額」等を補足開示。</li>
+  </ul>
+  <pre><code>（貸借対照表）
+  有形固定資産（純額）　70,000
+   （取得価額100,000、減価償却累計額30,000）
+</code></pre>
+
+  <div class="note">実務では、比較可能性と明瞭性の観点から<strong>間接表示が主流</strong>です。純額の見やすさを優先するときは直接表示＋注記を選択します。</div>
+
+  <h2>💰 PL（損益計算書）上の表示：減価償却費</h2>
+  <p>資産の<strong>用途</strong>に応じて表示区分が異なります。</p>
+  <table>
+    <tr><th>資産の用途</th><th>主な対象</th><th>PL上の表示区分</th><th>勘定科目例</th></tr>
+    <tr><td>営業活動で使用</td><td>店舗設備、事務機器、車両 等</td><td><strong>販売費及び一般管理費</strong>（または製造原価）</td><td>減価償却費</td></tr>
+    <tr><td>製造のために使用</td><td>製造設備、工場建物 等</td><td><strong>製造原価</strong>（製造間接費）</td><td>減価償却費（製造）</td></tr>
+    <tr><td>投資目的で保有</td><td>賃貸用建物、投資不動産 等</td><td><strong>営業外費用</strong>（投資損益区分）</td><td>投資不動産減価償却費 等</td></tr>
+  </table>
+
+  <h3>📌 表示の原則（要点）</h3>
+  <ul>
+    <li><strong>原則：</strong> 事業用資産の減価償却費は<strong>販売費及び一般管理費</strong>（製造業は製造原価に配賦）。</li>
+    <li><strong>投資資産：</strong> 投資目的で保有する資産の償却は<strong>営業外費用</strong>に計上（企業の表示方針に合わせて「投資損益」内に区分表示することも）。</li>
+  </ul>
+
+  <h2>🧭 まとめ</h2>
+  <table>
+    <tr><th>テーマ</th><th>要点</th></tr>
+    <tr><td>固定資産</td><td>1年以上使用する事業用資産（有形／無形／投資その他）</td></tr>
+    <tr><td>減価償却の意義</td><td>価値の減少を期間配分し、各期の損益を適正化（期間対応）</td></tr>
+    <tr><td>BS表示</td><td>間接表示（取得原価 − 減価償却累計額）／直接表示（純額＋注記）</td></tr>
+    <tr><td>PL表示</td><td>営業資産→販管費（または製造原価）、投資資産→営業外費用</td></tr>
+  </table>
+
+  <div class="summary">
+    <strong>結論：</strong> 実務では<strong>間接表示＋注記</strong>が見やすく、<strong>用途に応じたPL区分</strong>（販管費／製造原価／営業外費用）で整合的に運用するのが基本です。
+  </div>
+
+  <p class="small">※必要に応じて、減損、資本的支出と修繕費の区分、リース資産（使用権資産）の償却表示なども追補可能です。</p>
+</main>
+</body>
+</html>
