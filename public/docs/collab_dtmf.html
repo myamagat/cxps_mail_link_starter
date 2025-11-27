@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DTMFとその伝送方式（RFC2833とみなし音声）</title>
+  <style>
+    body { font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, Arial, sans-serif; background:#ffffff; color:#111; line-height:1.75; margin:0; }
+    main { max-width: 960px; margin: 24px auto; padding: 24px; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); background:#fff; }
+    h1 { color:#0b4a6f; margin:0 0 12px; }
+    h2 { color:#0b4a6f; margin:24px 0 8px; }
+    h3 { color:#0b4a6f; margin:16px 0 6px; }
+    p { margin: 0 0 12px; }
+    ul { margin-top: 0; }
+    pre { background:#ffffff; color:#111; border:1px solid #cbd5e1; border-radius:8px; padding:12px; overflow:auto; }
+    pre code { background:none; font-family: Consolas, Menlo, Monaco, "Courier New", monospace; font-size:14px; line-height:1.35; white-space:pre; display:block; }
+    table { width:100%; border-collapse:collapse; margin: 12px 0; font-size: 14px; }
+    th, td { border:1px solid #e5e7eb; padding:8px; text-align:left; }
+    th { background:#f1f5f9; }
+    .note { background:#e0f2fe; border-left:6px solid #0ea5e9; padding:12px; border-radius:6px; margin:12px 0; }
+    .merit { background:#dcfce7; border-left:6px solid #22c55e; padding:12px; border-radius:6px; margin:12px 0; }
+    .demerit { background:#fee2e2; border-left:6px solid #ef4444; padding:12px; border-radius:6px; margin:12px 0; }
+    .summary { background:#f8fafc; border: 2px solid #e2e8f0; padding: 12px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>☎️ DTMFとその伝送方式（RFC2833とみなし音声）</h1>
+  <p><strong>概要:</strong> 本資料では、電話のボタン操作で使われる <strong>DTMF</strong> の仕組みと、IPネットワーク上で DTMF を伝送する代表的な方式である <strong>RFC2833</strong> と、従来の <strong>みなし音声（In-band DTMF）</strong> の違いを整理します。</p>
+
+  <h2>1. DTMFとは</h2>
+  <p>
+    <strong>DTMF（Dual Tone Multi-Frequency）</strong> は、電話機のプッシュボタンを押したときに鳴る「ピッ、ポッ」というトーン信号で数字や記号を伝える方式です。
+  </p>
+
+  <div><img src="images/c1-1.png" alt="" width="258" height="288.5"></div><br>
+
+  <ul>
+    <li>各キーは「低い周波数」と「高い周波数」の<strong>2つのトーン</strong>の組み合わせで表現される</li>
+    <li>例：<code>1</code>キー → 697 Hz + 1209 Hz の2つのトーン</li>
+  </ul>
+
+  <h3>主な利用シーン</h3>
+  <ul>
+    <li>IVR（自動音声応答）でのメニュー選択（「1:日本語」「2:英語」 など）</li>
+    <li>PBXの内線番号入力・各種機能操作</li>
+    <li>コールセンターでの各種認証・ガイダンス操作</li>
+  </ul>
+
+  <div class="note">
+    <strong>ポイント:</strong> DTMFそのものは「音」の仕組みですが、IP電話（VoIP）環境では、
+    <strong>その音をどうネットワーク上で伝えるか</strong> が重要になります。
+  </div>
+
+  <h2>2. DTMF伝送方式の2つの考え方</h2>
+  <p>DTMFをネットワーク上で伝送する場合、代表的には次の2つの方式があります。</p>
+  <ul>
+    <li><strong>みなし音声（In-band DTMF）:</strong> DTMFを「そのまま音声」として伝送する方式</li>
+    <li><strong>RFC2833（Out-of-band DTMF / RTP Events）:</strong> DTMFを「音声とは別のデータ」として伝送する方式</li>
+  </ul>
+
+  <h2>3. みなし音声（In-band DTMF）とは</h2>
+  <p>
+    <strong>みなし音声（In-band DTMF）</strong> は、DTMFトーンを通常の音声と同じように扱い、音声ストリームの中にそのまま乗せて伝送する方式です。
+  </p>
+
+  <h3>特徴</h3>
+  <ul>
+    <li>アナログ電話網（PSTN）で古くから利用されている伝統的な方式</li>
+    <li>VoIP環境でも「音声コーデックで圧縮された音」としてDTMFが流れる</li>
+    <li>ノイズや音声圧縮（G.729など）の影響を受けるため、DTMF検出が不安定になりやすい</li>
+  </ul>
+
+  <h3>イメージ</h3>
+  <pre><code>【みなし音声（In-band）】
+  電話機で「1」キー押下
+      ↓（697 Hz + 1209 Hzの音が鳴る）
+  マイクで拾われ、音声としてそのまま伝送
+      ↓
+  途中の機器・コーデックで圧縮／伸張される
+      ↓
+  相手側機器が「音」を聞いてDTMFと判定する</code></pre>
+
+  <div class="merit">
+    <strong>メリット:</strong>
+    <ul>
+      <li>アナログ回線・古いPBXとの互換性が高い</li>
+      <li>特別なプロトコル拡張を意識しなくてもよい（「音」として扱うだけ）</li>
+    </ul>
+  </div>
+  <div class="demerit">
+    <strong>デメリット:</strong>
+    <ul>
+      <li>コーデック圧縮やネットワークの品質に依存し、DTMF誤認識・取りこぼしが起きやすい</li>
+      <li>VoIP環境では、G.729などの低ビットレートコーデック使用時に特に不安定</li>
+    </ul>
+  </div>
+
+  <h2>4. RFC2833とは（RTP上でのDTMFイベント伝送）</h2>
+  <p>
+    <strong>RFC2833</strong> は、IPネットワーク上で DTMF を伝送するための標準仕様で、<strong>RTPパケット内で「DTMFイベント」として音声とは別に</strong>送る方式です。
+  </p>
+
+  <h3>特徴</h3>
+  <ul>
+    <li>DTMFを「音」としてではなく、「<strong>イベント情報（数字や記号のコード）</strong>」として送信</li>
+    <li>音声RTPとは別のRTPイベントとして扱われるため、コーデックによる劣化の影響を受けにくい</li>
+    <li>SIP/VoIP環境で事実上の標準方式として広く利用されている</li>
+  </ul>
+
+  <h3>イメージ</h3>
+  <pre><code>【RFC2833（Out-of-band / RTP Events）】
+  電話機で「1」キー押下
+      ↓
+  端末が「DTMFイベント: '1'」というデータを生成
+      ↓
+  RTPイベントパケットとして送信（音声とは別枠）
+      ↓
+  相手側機器は「イベント情報」を受け取り、
+  確実に「1」が押されたことを認識できる</code></pre>
+
+  <div class="merit">
+    <strong>メリット:</strong>
+    <ul>
+      <li>音声コーデック（G.711, G.729, G.722 など）に依存せず、DTMFが安定して伝送できる</li>
+      <li>パケットロスや遅延の状況でも比較的安定して認識できるよう設計されている</li>
+      <li>IP-PBX、IVR、SIPトランクなど、現代のVoIP環境で標準的にサポート</li>
+    </ul>
+  </div>
+  <div class="demerit">
+    <strong>デメリット:</strong>
+    <ul>
+      <li>両端の機器（IP電話機・ゲートウェイ・PBXなど）がRFC2833に対応している必要がある</li>
+      <li>アナログ網のみの環境ではそのまま使えない（ゲートウェイで変換が必要）</li>
+    </ul>
+  </div>
+
+  <h2>5. 「RFC2833」と「みなし音声」の違い（まとめ）</h2>
+  <table>
+    <tr>
+      <th>項目</th>
+      <th>RFC2833</th>
+      <th>みなし音声（In-band DTMF）</th>
+    </tr>
+    <tr>
+      <td>伝送の考え方</td>
+      <td>DTMFを<strong>音声とは別のデータ（RTPイベント）</strong>として送る</td>
+      <td>DTMFを<strong>普通の音声として</strong>そのまま送る</td>
+    </tr>
+    <tr>
+      <td>主な利用環境</td>
+      <td>IPネットワーク（SIP / VoIP、IP-PBX、IVRなど）</td>
+      <td>アナログ回線、TDM-PBX、シンプルな音声回線</td>
+    </tr>
+    <tr>
+      <td>コーデックの影響</td>
+      <td>ほぼ受けない（コーデック非依存）</td>
+      <td>大きく受ける（歪み・誤検出の原因）</td>
+    </tr>
+    <tr>
+      <td>互換性</td>
+      <td>VoIP機器同士で設定が一致している必要あり</td>
+      <td>古い機器・アナログ網と相性がよい</td>
+    </tr>
+    <tr>
+      <td>典型的な説明</td>
+      <td>「<strong>IPネットワーク上でDTMFを伝送する標準規格</strong>」</td>
+      <td>「<strong>DTMFを ‘みなし音声’ として扱う伝統的な方式（主にアナログ伝送路で使用）</strong>」</td>
+    </tr>
+  </table>
+
+  <h2>6. どちらを使うべきか</h2>
+  <ul>
+    <li><strong>IP電話（SIP）、IP-PBX、クラウドPBX、IVRなどが絡む構成</strong>：
+      <br>→ 原則 <strong>RFC2833</strong> を利用するのがベストプラクティス</li>
+    <li><strong>純粋なアナログ回線のみ・古いPBXのみの環境</strong>：
+      <br>→ 従来どおり <strong>みなし音声（In-band DTMF）</strong> で問題ないケースが多い</li>
+  </ul>
+
+  <div class="summary">
+    <strong>まとめ:</strong><br>
+    <ul>
+      <li>DTMFは「2つの周波数の組み合わせ」で数字や記号を伝える電話用の信号方式。</li>
+      <li><strong>みなし音声</strong>は「DTMFをそのまま音声として」伝送する方式で、アナログ回線で主流だった。</li>
+      <li><strong>RFC2833</strong>は「IPネットワーク上でDTMFを音声とは別のイベントとして伝送する規格」で、現代のSIP/VoIP環境で標準的に利用されている。</li>
+      <li>VoIP環境では、コーデックの影響を避けるため、基本的に <strong>RFC2833 を優先的に使う</strong>のが推奨される。</li>
+    </ul>
+  </div>
+</main>
+</body>
+</html>
