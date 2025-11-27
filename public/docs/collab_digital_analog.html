@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>音声の伝送方式：デジタル伝送とアナログ伝送の違いと特徴</title>
+  <style>
+    body { font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, Arial, sans-serif; background:#ffffff; color:#111; line-height:1.75; margin:0; }
+    main { max-width: 960px; margin: 24px auto; padding: 24px; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); background:#fff; }
+    h1 { color:#0b4a6f; margin:0 0 12px; }
+    h2 { color:#0b4a6f; margin:24px 0 8px; }
+    h3 { color:#0b4a6f; margin:16px 0 6px; }
+    p { margin: 0 0 12px; }
+    ul { margin-top: 0; }
+    pre { background:#ffffff; color:#111; border:1px solid #cbd5e1; border-radius:8px; padding:12px; overflow:auto; }
+    pre code { background:none; font-family: Consolas, Menlo, Monaco, "Courier New", monospace; font-size:14px; line-height:1.35; white-space:pre; display:block; }
+    table { width:100%; border-collapse:collapse; margin: 12px 0; font-size: 14px; }
+    th, td { border:1px solid #e5e7eb; padding:8px; text-align:left; }
+    th { background:#f1f5f9; }
+    .note { background:#e0f2fe; border-left:6px solid #0ea5e9; padding:12px; border-radius:6px; margin:12px 0; }
+    .merit { background:#dcfce7; border-left:6px solid #22c55e; padding:12px; border-radius:6px; margin:12px 0; }
+    .demerit { background:#fee2e2; border-left:6px solid #ef4444; padding:12px; border-radius:6px; margin:12px 0; }
+    .summary { background:#f8fafc; border: 2px solid #e2e8f0; padding: 12px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>📡 音声の伝送方式：デジタル伝送とアナログ伝送</h1>
+  <p>
+    本資料では、電話や通信ネットワークで使われる「音声の伝送方式」として、<strong>デジタル伝送</strong> と <strong>アナログ伝送</strong> の違いと特徴を整理します。<br>
+    同じ「音声」を運ぶ仕組みでも、<strong>ビット列として送るか</strong>、<strong>アナログ波のまま送るか</strong> で考え方や特性が大きく変わります。
+  </p>
+
+  <h2>1. デジタル伝送とは</h2>
+  <p>
+    <strong>デジタル伝送</strong> は、音声信号を一度デジタルデータ（ビット列）に変換してから、そのビット列をそのまま伝送する方式です。
+  </p>
+  <ul>
+    <li>音声を A/D 変換し、<strong>0 と 1 のビット列</strong>として表現</li>
+    <li>代表例：<strong>64kbps PCM（G.711 / 64PCM）</strong></li>
+    <li>「音声を 64キロビット/秒で符号化し、そのデータをビット配列としてそのまま伝送」するイメージ</li>
+  </ul>
+
+  <h3>1.1 64kbps PCM（G.711 / 64PCM）のイメージ</h3>
+  <p>固定電話網などで使われる代表的な方式です（G.711）。</p>
+  <ul>
+    <li>サンプリング周波数：8kHz（1秒間に8,000回サンプリング）</li>
+    <li>量子化ビット数：8ビット</li>
+    <li>8,000サンプル × 8ビット = <strong>64,000ビット/秒（= 64kbps）</strong></li>
+  </ul>
+
+  <div><img src="images/c2-1.png" alt="" width="378.4" height="213.6"></div>
+
+  <pre><code>【デジタル伝送（64kbps PCM）の流れ】
+  アナログ音声
+      ↓  A/D変換（サンプリング＋量子化）
+  8ビットのPCMデータ（0/1のビット列）
+      ↓  タイムスロットやパケットに格納
+  デジタル回線・IPネットワーク上を伝送</code></pre>
+
+  <div class="merit">
+    <strong>デジタル伝送のメリット</strong>
+    <ul>
+      <li>ノイズに強い（ビット錯誤として扱えるため、誤り訂正も可能）</li>
+      <li>品質が距離に依存しにくい（中継しても「再生」される）</li>
+      <li>多重化・交換・記録・暗号化との相性が良い</li>
+      <li>音声・データ・映像を同じデジタル基盤上で扱える</li>
+    </ul>
+  </div>
+
+  <div class="demerit">
+    <strong>デジタル伝送のデメリット</strong>
+    <ul>
+      <li>A/D変換・符号化・多重化などの装置が必要（アナログに比べ回路が複雑）</li>
+      <li>符号化レート（例：64kbps）を確保するだけの帯域が必要</li>
+      <li>過度な圧縮を行うと音質劣化が目立ちやすい</li>
+    </ul>
+  </div>
+
+  <h2>2. アナログ伝送とは</h2>
+  <p>
+    <strong>アナログ伝送</strong> は、音声信号をそのままアナログ波として扱い、<strong>搬送波にAM/FM変調して伝送</strong>する方式です。
+  </p>
+  <ul>
+    <li>音声をアナログ電圧・電流の変化として扱う</li>
+    <li>その音声信号で搬送波の振幅や周波数を変調（AM, FMなど）</li>
+    <li>「音声を搬送波にのせ、その変調されたアナログデータを伝送する」イメージ</li>
+  </ul>
+
+    <div><img src="images/c2-2.png" alt="" width="510.7" height="167.3"></div>
+
+  <h3>2.1 アナログ伝送のイメージ</h3>
+  <pre><code>【アナログ伝送の流れ】
+  アナログ音声
+      ↓  マイクで電気信号化（アナログ）
+  搬送波にAM/FM変調
+      ↓
+  変調されたアナログ波として伝送（無線・有線）
+      ↓
+  受信側で復調し、再びアナログ音声として再生</code></pre>
+
+  <div class="merit">
+    <strong>アナログ伝送のメリット</strong>
+    <ul>
+      <li>回路構成が比較的シンプル（古典的な電話やラジオなど）</li>
+      <li>連続値として扱うため、変換処理なしでそのまま再生できる</li>
+      <li>デジタル化しなくてもよいため、ごく単純なシステムには向く</li>
+    </ul>
+  </div>
+
+  <div class="demerit">
+    <strong>アナログ伝送のデメリット</strong>
+    <ul>
+      <li>距離に応じて減衰・ノイズが蓄積し、S/N比が悪化しやすい</li>
+      <li>一度劣化した信号を完全に元に戻すことが難しい</li>
+      <li>多重化・交換・暗号化などの高度な処理がやや苦手</li>
+      <li>長距離・大容量通信には不向き（中継ごとに劣化が積み重なる）</li>
+    </ul>
+  </div>
+
+  <h2>3. デジタル伝送とアナログ伝送の比較</h2>
+  <table>
+    <tr>
+      <th>項目</th>
+      <th>デジタル伝送</th>
+      <th>アナログ伝送</th>
+    </tr>
+    <tr>
+      <td>基本的な考え方</td>
+      <td>音声を<strong>ビット列（0/1）</strong>に変換して伝送</td>
+      <td>音声を<strong>連続的な電気信号</strong>として、そのまま/変調して伝送</td>
+    </tr>
+    <tr>
+      <td>具体例</td>
+      <td>64kbps PCM（G.711, 64PCM）、デジタル電話網、IP電話 など</td>
+      <td>アナログ電話回線、ラジオ放送（AM/FM）、古い有線放送 など</td>
+    </tr>
+    <tr>
+      <td>帯域の扱い</td>
+      <td>符号化レート（例：64kbps）を確保する必要あり</td>
+      <td>音声帯域や変調方式に応じたアナログ帯域を使用</td>
+    </tr>
+    <tr>
+      <td>ノイズ耐性</td>
+      <td>高い（ビット誤りとして扱え、再生・訂正が可能）</td>
+      <td>低い（距離とともにノイズが蓄積し、劣化が戻せない）</td>
+    </tr>
+    <tr>
+      <td>装置の複雑さ</td>
+      <td>A/D変換・符号化・多重化などが必要で比較的複雑</td>
+      <td>変調・復調回路は比較的シンプルな構成も可能</td>
+    </tr>
+    <tr>
+      <td>高度な処理との相性</td>
+      <td>多重化・交換・暗号化・圧縮などとの相性が良い</td>
+      <td>高度処理は苦手で、アナログ専用の工夫が必要</td>
+    </tr>
+    <tr>
+      <td>一言で言うと</td>
+      <td>「音声を<strong>デジタルデータとして扱う近代的な伝送方式</strong>」</td>
+      <td>「音声を<strong>アナログ波として扱う伝統的な伝送方式</strong>」</td>
+    </tr>
+  </table>
+
+  <h2>4. デジタルとアナログのイメージ</h2>
+  <pre><code>【デジタル伝送（64kbps PCMの例）】
+  音声 ──▶ A/D変換 ──▶ 64kbpsのビット列 ──▶ デジタル回線/パケット網
+
+【アナログ伝送】
+  音声 ──▶ アナログ信号 ──▶ 搬送波にAM/FM変調 ──▶ アナログ回線/無線路</code></pre>
+
+  <div class="summary">
+    <strong>まとめ</strong>
+    <ul>
+      <li><strong>デジタル伝送</strong>：音声を 64kbps PCM などで符号化し、そのビット配列をそのまま伝送する方式。ノイズに強く、多重化や暗号化など高度な処理と相性が良い。</li>
+      <li><strong>アナログ伝送</strong>：音声を搬送波に AM/FM 変調し、その変調されたアナログ波を伝送する方式。構成はシンプルだが、距離とともに劣化しやすい。</li>
+      <li>現代の電話網・IPネットワークでは、基盤はほぼ<strong>デジタル伝送が主流</strong>であり、アナログはユーザインターフェースや一部のローカル区間に残っている形が多い。</li>
+    </ul>
+  </div>
+</main>
+</body>
+</html>
