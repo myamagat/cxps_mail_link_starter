@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ALG(Application Layer Gateway) と SIP ALG の解説</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+      line-height: 1.7;
+      margin: 0;
+      padding: 0;
+      background: #f5f5f7;
+      color: #222;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 16px 64px;
+    }
+    h1, h2, h3 {
+      line-height: 1.4;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5em;
+    }
+    h2 {
+      font-size: 1.4rem;
+      margin-top: 2em;
+      border-left: 4px solid #0078d4;
+      padding-left: 0.5em;
+    }
+    h3 {
+      font-size: 1.1rem;
+      margin-top: 1.5em;
+      border-left: 3px solid #999;
+      padding-left: 0.5em;
+    }
+    p {
+      margin: 0.4em 0 0.4em;
+    }
+    ul, ol {
+      margin: 0.4em 0 0.8em 1.5em;
+    }
+    .lead {
+      background: #fff;
+      border-radius: 8px;
+      padding: 16px 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      margin-bottom: 24px;
+      border-left: 4px solid #0078d4;
+    }
+    .box {
+      background: #fff;
+      border-radius: 8px;
+      padding: 16px 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      margin-top: 16px;
+    }
+    .box-title {
+      font-weight: bold;
+      margin-bottom: 0.4em;
+      color: #0078d4;
+    }
+    .note {
+      font-size: 0.9rem;
+      color: #555;
+      border-left: 3px solid #ff9800;
+      background: #fff7e6;
+      padding: 8px 12px;
+      margin: 12px 0;
+      border-radius: 4px;
+    }
+    .warn {
+      font-size: 0.9rem;
+      color: #b71c1c;
+      border-left: 3px solid #f44336;
+      background: #ffebee;
+      padding: 8px 12px;
+      margin: 12px 0;
+      border-radius: 4px;
+    }
+    .code {
+      background: #272822;
+      color: #f8f8f2;
+      font-family: "SF Mono", Menlo, Consolas, "Courier New", monospace;
+      font-size: 0.9rem;
+      padding: 10px 12px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 8px 0 12px;
+    }
+    .code-inline {
+      font-family: "SF Mono", Menlo, Consolas, "Courier New", monospace;
+      background: #eee;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 0.95em;
+    }
+    .diagram {
+      background: #1e1e1e;
+      color: #e0e0e0;
+      font-family: "SF Mono", Menlo, Consolas, "Courier New", monospace;
+      font-size: 0.85rem;
+      padding: 10px 12px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 8px 0 12px;
+      white-space: pre;
+    }
+    .toc {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 24px;
+      border: 1px solid #ddd;
+    }
+    .toc-title {
+      font-weight: bold;
+      margin-bottom: 0.3em;
+    }
+    .toc ul {
+      margin: 0.2em 0 0.2em 1.2em;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      background: #e0f2f1;
+      color: #00695c;
+      border-radius: 999px;
+      padding: 2px 8px;
+      margin-right: 4px;
+    }
+    footer {
+      margin-top: 40px;
+      font-size: 0.8rem;
+      color: #777;
+      border-top: 1px solid #ddd;
+      padding-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>ALG（Application Layer Gateway）と SIP ALG の解説</h1>
+      <div class="lead">
+        <p>本資料では、ファイアウォールや NAT 装置で利用される <strong>ALG（Application Layer Gateway）</strong> の役割と、特に VoIP でよく問題になる <strong>SIP ALG</strong> の動作・メリット・トラブル事例・無効化の考え方を整理します。</p>
+        <p><span class="tag">ALG</span><span class="tag">SIP</span><span class="tag">VoIP</span><span class="tag">NAT Traversal</span></p>
+      </div>
+    </header>
+
+    <section class="toc">
+      <div class="toc-title">目次</div>
+      <ul>
+        <li><a href="#sec-what-is-alg">1. ALG とは何か</a></li>
+        <li><a href="#sec-why-alg">2. ALG が必要になる理由</a></li>
+        <li><a href="#sec-sip-basics">3. SIP と NAT 越えの課題</a></li>
+        <li><a href="#sec-sip-alg">4. SIP ALG の動作</a></li>
+        <li><a href="#sec-merit">5. SIP ALG のメリット</a></li>
+        <li><a href="#sec-trouble">6. SIP ALG が引き起こすトラブル</a></li>
+        <li><a href="#sec-practice">7. 実務での扱い方（ベストプラクティス）</a></li>
+        <li><a href="#sec-example">8. 設定例：Cisco ASA での SIP ALG 無効化</a></li>
+        <li><a href="#sec-summary">9. まとめ</a></li>
+      </ul>
+    </section>
+
+    <section id="sec-what-is-alg">
+      <h2>1. ALG とは何か</h2>
+      <p><strong>ALG（Application Layer Gateway）</strong> は、ファイアウォールや NAT ルータの中で動作する、<strong>アプリケーション層プロトコルを理解してパケットの中身を書き換えたり制御したりする機能</strong> です。</p>
+
+      <div class="box">
+        <div class="box-title">ALG の基本的な役割</div>
+        <ul>
+          <li>アプリケーション層のペイロードを解析する（Layer 7）</li>
+          <li>ペイロード内の IP アドレスやポート番号を、NAT 後の値に書き換える</li>
+          <li>アプリケーションの制御情報に応じて、動的にポートを開閉する</li>
+          <li>セッションの状態を追跡し、タイムアウトやクローズのタイミングを制御する</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="sec-why-alg">
+      <h2>2. ALG が必要になる理由</h2>
+      <p>通常の TCP/UDP 通信であれば、L3/L4 のヘッダにある IP アドレス・ポート番号だけを NAT で変換すれば問題なく動作します。しかし、次のようなプロトコルでは <strong>ペイロード内に IP アドレスやポート番号が埋め込まれる</strong> ため、単純な NAT だけでは正常に動作しないことがあります。</p>
+
+      <ul>
+        <li>FTP（PORT / PASV モード）</li>
+        <li>SIP（VoIP）</li>
+        <li>H.323</li>
+        <li>RTSP などのマルチメディア系プロトコル</li>
+      </ul>
+
+      <p>例として FTP（アクティブモード）では、クライアントからサーバに送るコマンド内に「自分の IP アドレスとポート番号」が書かれます。NAT 装置がそこを書き換えないと、サーバ側は <strong>プライベート IP に対して接続しようとしてしまい失敗</strong> します。</p>
+
+      <div class="diagram">
++-----------+            +-----------+             +-----------+
+| Client    | 192.168.1.10         NAT            | Server    |
+| (private) |-------------[ FW / Router ]---------| (public)  |
++-----------+            +-----------+             +-----------+
+
+FTP PORT コマンド (例)
+  PORT 192,168,1,10,195,80
+
+↑ NAT されないと、Server は 192.168.1.10:50000 に接続しようとして失敗
+      </div>
+
+      <p>このようなケースに対応するため、NAT 装置がアプリケーションのペイロードを理解し、書き換えを行う機能として ALG が利用されます。</p>
+    </section>
+
+    <section id="sec-sip-basics">
+      <h2>3. SIP と NAT 越えの課題</h2>
+      <p><strong>SIP（Session Initiation Protocol）</strong> は VoIP で利用されるシグナリングプロトコルで、通話の開始・終了・呼制御などを行います。</p>
+
+      <h3>3-1. SIP 通信の構成</h3>
+      <p>SIP を用いた VoIP 通信は、大きく以下の 2 つの要素で構成されます。</p>
+      <ul>
+        <li><strong>SIP シグナリング</strong>（通常 UDP/TCP 5060、TLS であれば 5061 など）</li>
+        <li><strong>RTP/RTCP メディア</strong>（実際の音声・映像を流す UDP ポート。範囲は装置により異なる）</li>
+      </ul>
+
+      <p>シグナリングは SIP メッセージ（INVITE, 200 OK, BYE など）として送受信され、その中に <strong>通話のために使用するメディア IP / ポート情報</strong> が含まれます。</p>
+
+      <h3>3-2. SIP メッセージ内に埋め込まれる IP / ポート</h3>
+      <p>SIP では次のようなヘッダや SDP に、端末自身の IP アドレスやポート番号が書き込まれます。</p>
+      <ul>
+        <li>Via ヘッダ</li>
+        <li>Contact ヘッダ</li>
+        <li>SDP の c=（connection）、m=（media）行 など</li>
+      </ul>
+
+      <div class="code">
+INVITE sip:alice@example.com SIP/2.0
+Via: SIP/2.0/UDP 192.168.10.10:5060;branch=z9hG4bK-123456
+Contact: &lt;sip:1001@192.168.10.10:5060&gt;
+...
+
+v=0
+o=- 3747 3747 IN IP4 192.168.10.10
+s=-
+c=IN IP4 192.168.10.10
+t=0 0
+m=audio 40000 RTP/AVP 0 8 18
+      </div>
+
+      <p>この例では、端末のプライベート IP <span class="code-inline">192.168.10.10</span> と、音声用のポート <span class="code-inline">40000</span> が SIP/SDP 内に書かれています。NAT 装置を通過するときに、これらが外側から正しく到達できる形に変換されないと、通話は確立しても音声が流れない・片通話になる、などの問題につながります。</p>
+
+      <div class="note">
+        NAT の外側から見ると、SIP サーバは <strong>「SIP/SDP に書かれた IP に向けて RTP を送る」</strong> ため、プライベート IP のままだと到達できません。
+      </div>
+    </section>
+
+    <section id="sec-sip-alg">
+      <h2>4. SIP ALG の動作</h2>
+      <p><strong>SIP ALG</strong> は、前述のような SIP / SDP 内の IP・ポート情報を理解し、必要に応じて <strong>NAT 後の IP・ポートに書き換える機能</strong> です。また、それに合わせてファイアウォールの許可ルールや NAT テーブルも動的に操作します。</p>
+
+      <h3>4-1. SIP メッセージの書き換え</h3>
+      <p>SIP ALG は、以下のような情報を解析・書き換えます。</p>
+      <ul>
+        <li>Via / Contact ヘッダ内の IP アドレス・ポート</li>
+        <li>SDP の c= 行（メディア用 IP アドレス）</li>
+        <li>SDP の m= 行（RTP などのメディアポート番号）</li>
+      </ul>
+
+      <p>例えば、内部端末からの SIP INVITE を通過させる際に、次のような変換が行われます。</p>
+
+      <div class="code">
+[変換前（内部端末 → FW 内部）]
+Contact: &lt;sip:1001@192.168.10.10:5060&gt;
+c=IN IP4 192.168.10.10
+m=audio 40000 RTP/AVP 0 8 18
+
+[変換後（FW 外部 → SIP サーバ行き）]
+Contact: &lt;sip:1001@203.0.113.10:5060&gt;
+c=IN IP4 203.0.113.10
+m=audio 52000 RTP/AVP 0 8 18
+      </div>
+
+      <p>ここでは、NAT 装置の外側 IP <span class="code-inline">203.0.113.10</span> と、変換された RTP ポート <span class="code-inline">52000</span> に書き換えています。</p>
+
+      <h3>4-2. 動的なポート開放（ピンホール）</h3>
+      <p>SIP ALG は、SDP の情報をもとに、メディア用の UDP ポートをファイアウォールで動的に開放します。</p>
+      <ul>
+        <li>SIP メッセージを検査し、RTP 用ポート番号を抜き出す</li>
+        <li>そのポートに対し、一時的に「外からの inbound UDP」を許可する</li>
+        <li>通話終了（BYE など）やタイムアウトで、開放したポートをクローズする</li>
+      </ul>
+
+      <h3>4-3. セッションの状態管理</h3>
+      <p>SIP ALG は、<span class="code-inline">REGISTER / INVITE / ACK / BYE</span> といったシグナリングを追跡し、以下のような状態管理も行うことがあります。</p>
+      <ul>
+        <li>どのクライアントがどの SIP アカウントで登録されているか</li>
+        <li>どの通話がアクティブで、どのポートがその通話に紐づいているか</li>
+        <li>タイムアウトや異常終了時のリソース解放</li>
+      </ul>
+
+      <h3>4-4. SDP でネゴシエーションされたメディア用ポートの動的開放</h3>
+      <p>よく聞かれるポイントとして、<strong>「SIP ALG は SDP でネゴシエーションされたメディア用ポート（RTP/RTCP）も動的に空けてくれるのか？」</strong> があります。</p>
+
+      <p>結論から言うと、<strong>はい、SIP ALG は SDP に記載された m=audio / m=video のポートを解析し、そのポートに対するピンホール（動的ポート開放）を行います。</strong></p>
+
+      <p>典型的な流れは以下のようになります。</p>
+      <ol>
+        <li>端末から SIP INVITE が送出され、その中の SDP に <span class="code-inline">m=audio 40000</span> などのメディアポートが含まれる。</li>
+        <li>SIP ALG が SDP を解析し、内部 IP とポート（例：192.168.10.10:40000）を把握する。</li>
+        <li>NAT 後に使用するグローバル側ポート（例：203.0.113.10:52000）を割り当て、SDP 内の IP/ポートを書き換える。</li>
+        <li>同時に、ファイアウォール内部で「203.0.113.10:52000 → 192.168.10.10:40000」に対応する UDP ピンホールを動的に作成する。</li>
+        <li>通話終了（BYE など）または一定時間無通信となった時点で、そのピンホールを削除する。</li>
+      </ol>
+
+      <div class="diagram">
+内部端末                  FW / NAT (SIP ALG)                  SIPサーバ
+192.168.10.10:40000  →  203.0.113.10:52000  →  (RTP送信先として認識)
+
+1. INVITE (SDP: 192.168.10.10:40000)
+2. ALG が SDP を解析し書き換え
+   → SDP: 203.0.113.10:52000
+3. ALG が 203.0.113.10:52000 のピンホールを動的に開放
+4. SIPサーバは 203.0.113.10:52000 宛てに RTP を送信
+5. ALG が 192.168.10.10:40000 に転送
+      </div>
+
+      <p>この「SDP をもとにメディア用ポートを開ける」動きこそが、SIP ALG の中核機能のひとつです。ただし、次のような場合にはうまく働かない／逆効果になることがあります。</p>
+      <ul>
+        <li>端末やクラウド PBX が STUN/TURN/ICE を利用して自分で NAT 越えを最適化している場合</li>
+        <li>SIP/SDP が TLS で暗号化されており、ALG が中身を読めない場合</li>
+        <li>ベンダ独自拡張やフォーマット差異により、ALG が SDP を正しく解釈できない場合</li>
+      </ul>
+
+      <div class="warn">
+        そのため、<strong>「ALG によるメディアポートの動的開放」が本来の狙いではあるものの、現代の STUN/TURN/ICE ベースの環境では、ALG が書き換えた結果としてむしろ片通話や無音などの障害を引き起こすケースも多く、実務では無効化が推奨されることが多い</strong>、という点が重要です。
+      </div>
+    </section>
+
+    <section id="sec-merit">
+      <h2>5. SIP ALG のメリット</h2>
+      <p>適切に動作している場合、SIP ALG には以下のようなメリットがあります。</p>
+      <ul>
+        <li>端末側が STUN/TURN/ICE 非対応でも、NAT 越えが可能になる</li>
+        <li>ファイアウォールの静的ポート開放設定を最小限にできる</li>
+        <li>NAT 装置が SIP セッションを把握しているため、セキュリティ的な制御もしやすい</li>
+      </ul>
+
+      <div class="note">
+        特に、古い IP Phone や宅内小型ルータ配下の単純な構成では、SIP ALG によって「何も設定していないが通話ができている」ように見えるケースもあります。
+      </div>
+    </section>
+
+    <section id="sec-trouble">
+      <h2>6. SIP ALG が引き起こすトラブル</h2>
+      <p>しかし実務では、<strong>SIP ALG が原因で VoIP が正常に動作しない</strong> ケースの方が多く、ベンダやサービスプロバイダからも「SIP ALG を無効化してください」と案内されることがよくあります。</p>
+
+      <h3>6-1. よくあるトラブル例</h3>
+      <ul>
+        <li>電話機は登録（REGISTER）は成功するが、発着信が不安定</li>
+        <li>発信はできるが、着信ができない / 着信がワン切れになる</li>
+        <li>通話は成立するが、音声が片方向しか聞こえない（one-way audio）</li>
+        <li>音声は聞こえるが、映像だけ映らない、またはその逆</li>
+        <li>時間が経つと急に通話が切れる（セッションタイムアウトや ALG の誤動作）</li>
+      </ul>
+
+      <div class="warn">
+        SIP ALG が SIP/SDP を「賢く直しているつもり」で書き換える結果、<strong>端末側の NAT 対応機能（STUN/TURN/ICE）と競合</strong> し、却って通信を壊してしまうことが多いです。
+      </div>
+
+      <h3>6-2. SIP over TLS / SRTP との相性</h3>
+      <p>SIP や SDP が TLS で暗号化されている場合、ALG は中身を解読できません。その結果：</p>
+      <ul>
+        <li>パケットの中身が見えないため、ALG として何もできない</li>
+        <li>一部の装置では、暗号化されている SIP を「不正な SIP」とみなしてブロックする</li>
+      </ul>
+
+      <p>現代のセキュアな VoIP（SIP over TLS + SRTP）との相性は悪く、ALG 自体が前提としていた「平文の SIP/SDP を見て書き換える」というモデルと噛み合わなくなってきています。</p>
+    </section>
+
+    <section id="sec-practice">
+      <h2>7. 実務での扱い方（ベストプラクティス）</h2>
+      <p>現代の IP 電話端末やソフトフォンは、ほとんどが以下のような NAT Traversal 機能を持っています。</p>
+      <ul>
+        <li>STUN（Session Traversal Utilities for NAT）</li>
+        <li>TURN（Traversal Using Relays around NAT）</li>
+        <li>ICE（Interactive Connectivity Establishment）</li>
+      </ul>
+
+      <p>これらの技術がある前提の設計では、<strong>SIP ALG はむしろ邪魔になることが多く、原則として無効化が推奨</strong> されることが一般的です。</p>
+
+      <div class="box">
+        <div class="box-title">実務上の基本方針（目安）</div>
+        <ul>
+          <li>VoIP 利用時、まずはルータ／FW の SIP ALG を無効化して動作確認する</li>
+          <li>STUN/TURN/ICE に対応した端末・PBX・クラウドサービスを前提とする</li>
+          <li>どうしても ALG が必要な古い環境では、対象機器やトポロジを明確に限定する</li>
+        </ul>
+      </div>
+
+      <p>多くのクラウド PBX / SIP トランク事業者のドキュメントにも、「ホームルータや UTM の SIP ALG を無効にしてください」という記述があるのは、このためです。</p>
+    </section>
+
+    <section id="sec-example">
+      <h2>8. 設定例：Cisco ASA での SIP ALG 無効化</h2>
+      <p>Cisco ASA では、<span class="code-inline">inspect sip</span> が SIP ALG に相当する機能です。デフォルトでは <span class="code-inline">global_policy</span> の中で有効になっていることが多く、これを無効化することで ALG を止めることができます。</p>
+
+      <h3>8-1. SIP ALG（inspect sip）の無効化例</h3>
+
+      <div class="code">
+! 既存の global_policy を確認
+show run policy-map
+
+! SIP のインスペクションを無効化
+conf t
+  policy-map global_policy
+    class inspection_default
+      no inspect sip
+end
+write memory
+      </div>
+
+      <p>上記のように <span class="code-inline">no inspect sip</span> を設定することで、ASA による SIP メッセージの書き換えや RTP ポートの動的開放が行われなくなります。</p>
+
+      <div class="note">
+        代わりに、クラウド側の SBC や PBX、エンドポイント側の STUN/TURN/ICE 機能に NAT 越えを任せる構成が一般的です。
+      </div>
+
+      <h3>8-2. その他装置の例（参考イメージ）</h3>
+      <p>装置ごとに名称やコマンドは異なりますが、概ね以下のような設定で SIP ALG を無効化します。</p>
+
+      <ul>
+        <li>UTM/ルータの GUI で「SIP ALG」「SIP Helper」「VoIP ALG」などのチェックボックスを OFF</li>
+        <li>CLI で <span class="code-inline">no alg sip</span>、<span class="code-inline">no ip nat service sip</span> などのコマンド</li>
+      </ul>
+    </section>
+
+    <section id="sec-summary">
+      <h2>9. まとめ</h2>
+      <ul>
+        <li><strong>ALG</strong> は、アプリケーション層プロトコルを理解してペイロードを書き換える機能で、NAT 越えに必要な場合がある。</li>
+        <li><strong>SIP ALG</strong> は、SIP/SDP 内の IP・ポートを書き換えたり、RTP ポートを動的に開放したりするために利用される。</li>
+        <li>特に SDP の m=audio / m=video でネゴシエーションされたメディア用ポートについて、SIP ALG はその情報を解析し、<strong>メディア用 UDP ポートのピンホールを動的に開放する</strong>。</li>
+        <li>古い端末やシンプルな構成では有効に働くこともあるが、現代の VoIP（STUN/TURN/ICE や SIP over TLS）とは相性が悪く、トラブルの原因になりやすい。</li>
+        <li>実務では、<strong>まず SIP ALG を無効化し、端末やクラウド側の NAT Traversal 機能に任せる</strong> 方針が一般的。</li>
+        <li>Cisco ASA では <span class="code-inline">no inspect sip</span> を設定することで SIP ALG を無効化できる。</li>
+      </ul>
+
+      <p>環境ごとに挙動が異なるため、VoIP のトラブルシュートでは「途中経路のどこかで SIP ALG が動いていないか？」を必ず疑うとよいです。</p>
+    </section>
+
+    <footer>
+      本ページをそのまま <span class="code-inline">.html</span> ファイルとして保存し、ブラウザで開くことで閲覧用ドキュメントとして利用できます。
+    </footer>
+  </div>
+</body>
+</html>
