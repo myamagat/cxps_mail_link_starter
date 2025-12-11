@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PBXの歴史</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #005073; /* Cisco blue-like */
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #007bff;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        p {
+            margin-bottom: 10px;
+        }
+        ul {
+            list-style-type: disc;
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+        strong {
+            color: #005073;
+        }
+        .note {
+            background-color: #e6f7ff;
+            border-left: 4px solid #007bff;
+            padding: 10px 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .summary {
+            background-color: #f0f8ff;
+            border-left: 4px solid #005073;
+            padding: 15px;
+            margin-top: 30px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>📜 PBX（Private Branch Exchange：構内交換機）の歴史</h1>
+
+    <p>PBX（Private Branch Exchange：構内交換機）の歴史は、通信技術の進化とともに大きく変遷してきました。以下に、ご指定の3つの時代区分に沿ってその歴史をまとめます。</p>
+
+    <h2>🕰️ 1. レガシー時代</h2>
+    <p>レガシーPBX時代は、主に<strong>アナログPBX</strong>や<strong>デジタルPBX</strong>が主流だった時期を指します。この時代は、電話回線の物理的な接続と交換が中心でした。</p>
+    <ul>
+        <li><strong>各局にPBXが存在:</strong> 企業や拠点ごとに物理的なPBX装置が設置されていました。これにより、内線通話や外線との接続が可能となります。初期のPBXは手動交換システムでしたが、技術の進歩により自動化が進みました。</li>
+        <li><strong>TDMによるトランク接続:</strong> 拠点間の通信や公衆電話網（PSTN）との接続には、<strong>TDM（Time Division Multiplexing：時分割多重）</strong>方式のトランク回線が用いられました。TDM PBXは物理的なスイッチを使用してコールをルーティングし、専用の回線を必要としました。</li>
+    </ul>
+    <p><strong>特徴:</strong> 大規模な設備投資が必要で、維持管理にも専門知識を持つスタッフが求められました。 デジタルPBXの登場により、内線通話、転送、ACD（自動着信呼分配）などの高度な機能が利用可能になりました。</p>
+
+    <h2>📞 2. VoIP時代</h2>
+    <p>2000年代に入ると、IP電話の普及とともにPBXも大きな転換期を迎え、<strong>VoIP（Voice over Internet Protocol）</strong>技術が導入され始めました。</p>
+    <ul>
+        <li><strong>TDMトランクのIP化:</strong> 従来のTDMによるトランク接続は、<strong>H.323</strong>や<strong>SIP（Session Initiation Protocol）</strong>といったプロトコルを用いたIPトランクへと移行しました。これにより、音声データがインターネットプロトコル（IP）ネットワークを介して送受信されるようになります。</li>
+        <li><strong>H.323とSIP:</strong> 1990年代後半には、LAN上での音声・動画像・データ通信の信号方式を標準化したH.323勧告をベースにVoIPシステムが始まりました。 その後、より柔軟で拡張性の高いSIPが電話サービスを提供するための標準仕様として注目され、IP-PBXの普及を加速させました。</li>
+    </ul>
+    <p><strong>メリット:</strong> IP-PBXの導入により、機器や設定の柔軟性が向上し、通信コストの低減が実現しました。</p>
+
+    <h2>☁️ 3. CUCM時代</h2>
+    <p>VoIP技術の成熟とネットワークインフラの発展に伴い、PBXの機能はデータセンターに集約され、より高度な集中管理が可能になりました。<strong>Cisco Unified Communications Manager (CUCM)</strong> は、この時代の代表的なソリューションの一つです。</p>
+    <ul>
+        <li><strong>PBX機能のDCへの集約:</strong> CUCMのようなシステムでは、PBXの主要機能がデータセンター（DC）に集約された「集中サーバによる制御が可能なコミュニケーションサーバ型」のアーキテクチャが採用されます。 これにより、各拠点に高価なPBX装置を設置する必要がなくなり、管理の一元化と運用コストの削減が図られます。</li>
+        <li><strong>各局へのVG設置:</strong> 各拠点には、既存のアナログ電話機や公衆電話網（PSTN）回線をIPネットワークに接続するための<strong>Voice Gateway（VG）</strong>が設置されます。VGは、音声信号の変換やルーティングの役割を担います。</li>
+        <li><strong>SRSTによる呼制御:</strong> ネットワーク障害などにより、各拠点とデータセンターのCUCMとの接続が途絶した場合、拠点が孤立することを防ぐために<strong>SRST（Survivable Remote Site Telephony）</strong>機能が活用されます。SRSTは、VGに搭載された簡易的な呼制御機能で、CUCMとの接続が失われた際に、その拠点内の電話機やPSTNへの発着信を継続させることができます。これにより、災害時などにおける通信の可用性が確保されます。</li>
+    </ul>
+
+    <div class="summary">
+        <h2>📘 まとめ</h2>
+        <p>PBXの歴史は、物理的な交換機からIPベースのソリューション、そしてデータセンターに集約された集中管理型へと進化してきました。この変遷は、通信技術の進歩とビジネスニーズの変化に密接に関連しており、特に<strong>VoIP</strong>と<strong>CUCM</strong>のような集中型コミュニケーションプラットフォームが、現代の企業通信において重要な役割を担っています。</p>
+    </div>
+
+</body>
+</html>
