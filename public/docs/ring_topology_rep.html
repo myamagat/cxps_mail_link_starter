@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ネットワークリングトポロジとプロトコルの考察</title>
+    <title>ネットワークトポロジとプロトコルの考察</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 20px; background-color: #f4f4f4; }
         h1, h2, h3 { color: #005073; }
@@ -68,6 +68,9 @@
         </div>
         <div class="point">
             <strong>REP (Resilient Ethernet Protocol):</strong> Cisco独自のプロトコルで、リングトポロジに特化して設計されています。50ミリ秒以下の高速な収束時間を実現します。
+        </div><br>
+        <div class="point">
+            <strong>REP (Resilient Ethernet Protocol) の動作原理:</strong> リング内の各ポートをセグメントIDとポートIDで識別し、プライマリポートとセカンダリポートを定義します。通常時はプライマリポートからトラフィックを転送し、セカンダリポートはブロック状態にあります。障害発生時には、ブロックされていたセカンダリポートを即座に開放し、迂回経路を確立することで、50ミリ秒以下の高速な収束時間を実現します。
         </div>
 
         <h3><span class="icon">🧭</span> REPとRSTPの比較</h3>
