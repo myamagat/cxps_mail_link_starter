@@ -60,14 +60,21 @@
         .emoji {
             margin-right: 8px;
         }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
 
     <h1><span class="emoji">📞</span> Asterisk & SIPコミュニティ概要</h1>
 
-    <h2><span class="emoji">⭐</span> Asterisk (SIPサーバー) の主要な取り組み</h2>
-    <p>オープンソースIP-PBXソフトウェア「Asterisk」は、Digium社（現Sangoma社）が開発し、SIPサーバー機能も持ちます。その活動は多岐にわたります。</p>
+    <h2><span class="emoji">⭐</span> Asterisk (SIPサーバ) の主要な取り組み</h2>
+    <p>オープンソースIP-PBXソフトウェア「Asterisk」は、Digium社（現Sangoma社）が開発し、SIPサーバ機能も持ちます。その活動は多岐にわたります。</p>
     <ul>
         <li>オープンソース開発とコミュニティによる貢献: 世界中の開発者がコードや新機能に貢献し、柔軟でコスト効率の高い通信ソリューションを可能にしています。</li>
         <li>継続的なバージョンリリースとメンテナンス: 定期的な新バージョンリリースと長期サポート（LTS）バージョン提供により、安定運用を支援します。</li>
@@ -100,20 +107,20 @@
     <h2><span class="emoji">🌍</span> 主要なSIPコミュニティ (Asterisk以外)</h2>
     <p>Asterisk以外にも、SIPに関するコミュニティやプロジェクトは多数存在します。</p>
     <ul>
-        <li>SIP Forum: SIPの採用促進と相互運用性確保のための標準化活動を行う国際的な非営利団体です。</li>
-        <li>Kamailio (旧 OpenSER): 高性能でスケーラブルなオープンソースのSIPプロキシ/レジストラ/ルーター。大規模なSIPネットワークのコアコンポーネントとして利用されます。</li>
-        <li>FreeSWITCH: Asteriskと同様にオープンソースのマルチプロトコル通信プラットフォームですが、よりモジュール化されたアーキテクチャと高いスケーラビリティが特徴です。</li>
-        <li>OpenSIPS: Kamailioからフォークしたプロジェクトで、こちらも高性能なオープンソースのSIPルーター/プロキシサーバーです。</li>
-        <li>WebRTC Community: ウェブブラウザ間でリアルタイム通信を可能にする技術で、SIPと密接に関連し、多くのWebRTCアプリケーションでSIPがシグナリングプロトコルとして利用されます。</li>
+        <li><a href="https://www.sipforum.org/" target="_blank">SIP Forum</a>: SIPの採用促進と相互運用性確保のための標準化活動を行う国際的な非営利団体です。</li>
+        <li><a href="https://www.kamailio.org/" target="_blank">Kamailio</a> (旧 OpenSER): 高性能でスケーラブルなオープンソースのSIPプロキシ/レジストラ/ルータで、大規模なSIPネットワークのコアコンポーネントとして利用されます。</li>
+        <li><a href="https://freeswitch.com/" target="_blank">FreeSWITCH</a>: Asteriskと同様にオープンソースのマルチプロトコル通信プラットフォームですが、よりモジュール化されたアーキテクチャと高いスケーラビリティが特徴です。</li>
+        <li><a href="https://opensips.org/" target="_blank">OpenSIPS</a>: Kamailioからフォークしたプロジェクトで、こちらも高性能なオープンソースのSIPルータ/プロキシサーバです。</li>
+        <li><a href="https://webrtc.org/" target="_blank">WebRTC Community</a>: ウェブブラウザ間でリアルタイム通信を可能にする技術で、SIPと密接に関連し、多くのWebRTCアプリケーションでSIPがシグナリングプロトコルとして利用されます。</li>
     </ul>
 
     <h2><span class="emoji">🇯🇵</span> 日本企業が関与するSIPコミュニティ</h2>
     <p>SIP関連のコミュニティにおいて、日本の企業や組織が関与している事例は存在します。</p>
     <ul>
-        <li>SIP Forum: 2007年時点の「VoIP/SIP相互接続検証タスクフォース」には、シスコシステムズ合同会社、富士通、日立製作所、KDDI、三菱電機、日本電気（NEC）、NTTコミュニケーションズ、沖電気工業、パナソニックコミュニケーションズ、東芝、ヤマハ株式会社といった日本の主要企業が参加していました。</li>
-        <li>「SIPit」イベント: SIP Forumが主催する相互接続検証イベントが、2009年に東京で日本ネットワークインフォメーションセンター（JPNIC）と情報通信研究機構（NICT）をホストとして開催されました。</li>
-        <li>WebRTC Community: 日本の企業もWebRTCを製品やサービスに組み込んでいる可能性は高いですが、WebRTCの標準化やオープンソースコミュニティの主要なコントリビューターとして特定の日本企業が明示的に挙げられている情報は見当たりませんでした。</li>
-        <li>Kamailio, FreeSWITCH, OpenSIPS: これらのオープンソースSIPサーバープロジェクトのコミュニティにおいて、日本の企業が直接的に開発に貢献している、あるいは主要なスポンサーとなっているという明確な情報は見当たりませんでした。</li>
+        <li><a href="https://www.sipforum.org/" target="_blank">SIP Forum</a>: 2007年時点の「VoIP/SIP相互接続検証タスクフォース」には、シスコシステムズ合同会社、富士通、日立製作所、KDDI、三菱電機、日本電気（NEC）、NTTコミュニケーションズ、沖電気工業、パナソニックコミュニケーションズ、東芝、ヤマハ株式会社といった日本の主要企業が参加していました。</li>
+        <li><a href="https://www.sipforum.org/sipit/" target="_blank">「SIPit」イベント</a>: SIP Forumが主催する相互接続検証イベントが、2009年に東京で日本ネットワークインフォメーションセンター（JPNIC）と情報通信研究機構（NICT）をホストとして開催されました。</li>
+        <li><a href="https://webrtc.org/" target="_blank">WebRTC Community</a>: 日本の企業もWebRTCを製品やサービスに組み込んでいる可能性は高いですが、WebRTCの標準化やオープンソースコミュニティの主要なコントリビューターとして特定の日本企業が明示的に挙げられている情報は見当たりませんでした。</li>
+        <li><a href="https://www.kamailio.org/" target="_blank">Kamailio</a>, <a href="https://freeswitch.com/" target="_blank">FreeSWITCH</a>, <a href="https://opensips.org/" target="_blank">OpenSIPS</a>: これらのオープンソースSIPサーバプロジェクトのコミュニティにおいて、日本の企業が直接的に開発に貢献している、あるいは主要なスポンサーとなっているという明確な情報は見当たりませんでした。</li>
     </ul>
     <div class="note">
         <span class="emoji">💡</span> したがって、日本の企業は特にSIPの標準化と相互運用性検証の分野で、SIP Forumを通じて積極的に関与してきた実績があります。
@@ -121,7 +128,7 @@
 
     <div class="summary">
         <span class="emoji">📘</span> まとめ
-        Asteriskは活発なオープンソースコミュニティに支えられ、多機能で柔軟なIP-PBXソリューションを提供しています。日本国内でも多くの企業がその導入・開発を支援していますが、大手PBXベンダーは独自の製品ラインに注力しており、直接的な開発協力は確認されていません。一方で、SIP Forumを通じて、日本の主要企業はSIPの標準化と相互運用性検証に積極的に貢献してきました。Asterisk以外のSIPコミュニティも多様であり、それぞれの特性に応じて活用されています。
+        Asteriskは活発なオープンソースコミュニティに支えられ、多機能で柔軟なIP-PBXソリューションを提供しています。日本国内でも多くの企業がその導入・開発を支援していますが、大手PBXベンダーは独自の製品ラインに注力しており、直接的な開発協力は確認されていません。一方で、<a href="https://www.sipforum.org/" target="_blank">SIP Forum</a>を通じて、日本の主要企業はSIPの標準化と相互運用性検証に積極的に貢献してきました。Asterisk以外のSIPコミュニティも多様であり、それぞれの特性に応じて活用されています。
     </div>
 
 </body>
