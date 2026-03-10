@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ステートフルFWとステートレスFWの違い</title>
+  <style>
+    body { font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, Arial, sans-serif;
+           background:#ffffff; color:#111; line-height:1.75; margin:0; }
+    main { max-width: 960px; margin: 24px auto; padding: 24px; border:1px solid #e5e7eb;
+           border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); background:#fff; }
+    h1 { color:#0b4a6f; margin:0 0 12px; }
+    h2 { color:#0b4a6f; margin:24px 0 8px; }
+    h3 { color:#0b4a6f; margin:16px 0 6px; }
+    p { margin: 0 0 12px; }
+    pre { background:#ffffff; color:#111; border:1px solid #cbd5e1; border-radius:8px;
+          padding:12px; overflow:auto; }
+    pre code { background:none; font-family:Consolas, Menlo, Monaco, "Courier New", monospace;
+               font-size:15px; line-height:1.35; white-space:pre; display:block; }
+    .note { background:#e0f2fe; border-left:6px solid #0ea5e9; padding:12px;
+            border-radius:6px; margin:12px 0; }
+    .summary { background:#f8fafc; border:2px solid #e2e8f0; padding:12px;
+               border-radius:8px; margin-top:16px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>🔐 ステートフルFWとステートレスFWの違い</h1>
+
+  <h2>🗺️ イメージ図</h2>
+  <pre><code>クライアント                  Firewall                      サーバ
+10.1.1.10   ---- SYN ----->   [ 判定 ]   ---- SYN ----->    203.0.113.10
+            <--- SYN/ACK ---  [ 判定 ]   <--- SYN/ACK ---
+            ---- ACK ----->   [ 判定 ]   ---- ACK ----->
+
+ステートフル: 接続状態（SYN, ESTABLISHED など）を記録して判断
+ステートレス: その瞬間のパケット情報だけで毎回判断</code></pre>
+
+  <h2>⚙️ それぞれの特徴</h2>
+
+  <h3>✅ ステートフルファイアウォール</h3>
+  <p>通信セッションの状態をテーブルとして保持し、<strong>往復の整合性</strong>を見ながら許可/拒否します。</p>
+  <pre><code>主な判断材料:
+- 送信元/宛先IP
+- 送信元/宛先ポート
+- プロトコル（TCP/UDP/ICMP）
+- セッション状態（NEW / ESTABLISHED / RELATED など）</code></pre>
+  <p>内部から開始した通信の戻りトラフィックを自動で通しやすく、一般的な企業境界でよく使われます。</p>
+
+  <h3>✅ ステートレスファイアウォール</h3>
+  <p>各パケットを独立してチェックし、<strong>状態は保持しません</strong>。ルールはシンプルですが、戻り通信も明示的な許可が必要です。</p>
+  <pre><code>主な判断材料:
+- 送信元/宛先IP
+- 送信元/宛先ポート
+- プロトコル
+
+※ セッション状態は見ない</code></pre>
+  <p>処理が軽く高速に動作しやすいため、シンプルなACL用途や高スループットが必要な場面で有効です。</p>
+
+  <h2>📌 比較表</h2>
+  <pre><code>項目                 ステートフル                 ステートレス
+-----------------------------------------------------------------
+状態管理             あり（セッション追跡）       なし
+戻り通信の扱い       自動許可しやすい             明示ルールが必要
+設定のしやすさ       比較的わかりやすい           ルール増加で複雑化しやすい
+性能/負荷            負荷はやや高め               軽量で高速
+代表的な用途         企業境界、一般FW             ACL、単純フィルタ、高速区間</code></pre>
+
+  <div class="note">
+    💡 実運用では、境界防御はステートフル、内部の一部高速区間はステートレスACLというように使い分ける構成も一般的です。
+  </div>
+
+  <h2>📘 まとめ</h2>
+  <div class="summary">
+    <strong>ステートフル</strong>は「通信の流れ」を理解して安全に制御する方式、
+    <strong>ステートレス</strong>は「単発パケット」を高速に振り分ける方式です。<br>
+    迷った場合は、まずステートフルを基本にし、要件に応じてステートレスを補助的に使うと設計しやすくなります。
+  </div>
+</main>
+</body>
+</html>
