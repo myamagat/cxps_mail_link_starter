@@ -1,140 +1,234 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Login | CXPS Collaboration</title>
-  <style>
-    :root { --bd:#e5e7eb; --muted:#6b7280; }
-    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif; margin: 24px; }
-    .card { border: 1px solid var(--bd); border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.05); max-width: 720px; }
-    .btn { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--bd); background: #f9fafb; cursor: pointer; }
-    .btn:hover { background: #f3f4f6; }
-    input[type="email"] { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--bd); margin: 6px 0; }
-    .muted { color: var(--muted); }
-    pre { background:#0b1021; color:#e3e8ff; padding:12px; border-radius:8px; overflow:auto; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login | CXPS Collaboration</title>
 
-  <!-- Firebase JS SDK (v10) -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-    import {
-      getAuth, setPersistence, browserLocalPersistence,
-      isSignInWithEmailLink, sendSignInLinkToEmail, signInWithEmailLink,
-      onAuthStateChanged, signOut
-    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+<style>
+:root { --bd:#e5e7eb; --muted:#6b7280; --warn:#b45309; }
+body{
+  font-family: system-ui, -apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans JP",sans-serif;
+  margin:24px;
+}
+.card{
+  border:1px solid var(--bd);
+  border-radius:12px;
+  padding:20px;
+  margin-bottom:16px;
+  max-width:720px;
+  box-shadow:0 1px 2px rgba(0,0,0,.05);
+}
+.btn{
+  padding:10px 14px;
+  border-radius:8px;
+  border:1px solid var(--bd);
+  background:#f9fafb;
+  cursor:pointer;
+  margin-right:8px;
+}
+.btn:hover{ background:#f3f4f6; }
+input{
+  width:100%;
+  padding:10px;
+  border:1px solid var(--bd);
+  border-radius:8px;
+  margin:6px 0;
+  box-sizing:border-box;
+}
+.muted{ color:var(--muted); }
+.warn{ color:var(--warn); font-weight:600; }
+</style>
 
-    // ▼▼ Firebase コンソール「プロジェクト設定 > 全般 > Webアプリ（</>）」の Config を貼り付けてください ▼▼
-    const firebaseConfig = {
-      apiKey: "AIzaSyBNssRe0SUmvvJ5t5UUnqDCnTTF1Q-WD8c",
-      authDomain: "gcp-cxjapancollabor-nprd-88957.firebaseapp.com",
-      projectId: "gcp-cxjapancollabor-nprd-88957",
-      appId: "1:659563877036:web:b0e04146aa1002f5898509"
-      // storageBucket / messagingSenderId / measurementId は任意
-    };
-    // ▲▲ ここまで ▲▲
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+import {
+  getAuth, setPersistence, browserLocalPersistence,
+  isSignInWithEmailLink, sendSignInLinkToEmail, signInWithEmailLink,
+  signInWithEmailAndPassword,
+  onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 
-    // 社内ドメイン制限（必要なら設定。空配列なら無効）
-    const ALLOWED_DOMAINS = ["cisco.com"]; // 例: ["cisco.com"] 複数可
-    const allowDomain = (email) => {
-      if (!email) return false;
-      if (ALLOWED_DOMAINS.length === 0) return true;
-      return ALLOWED_DOMAINS.some(d => email.toLowerCase().endsWith("@"+d.toLowerCase()));
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyBNssRe0SUmvvJ5t5UUnqDCnTTF1Q-WD8c",
+  authDomain: "gcp-cxjapancollabor-nprd-88957.firebaseapp.com",
+  projectId: "gcp-cxjapancollabor-nprd-88957",
+  appId: "1:659563877036:web:b0e04146aa1002f5898509"
+};
 
-    const app  = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    setPersistence(auth, browserLocalPersistence);
+const ALLOWED_DOMAINS = ["cisco.com"];
+let fallbackTimer = null;
 
-    // ===== メールリンク（パスワードレス） =====
-    window.sendLink = async () => {
-      const email = document.getElementById('ml-email').value.trim();
-      if (!allowDomain(email)) { alert("社内メールのみ許可されています"); return; }
+function allowDomain(email){
+  if(!email) return false;
+  return ALLOWED_DOMAINS.some(d => email.toLowerCase().endsWith("@"+d.toLowerCase()));
+}
 
-      // ★ 変更点：今アクセスしているドメインに合わせて戻り先を作る
-      //   例: stg で開いていれば stg に、本番で開いていれば本番に戻る
-      const redirectPath = "/login.html"; // 認証完了後に戻したい相対パス（必要に応じて変更）
-      const url = new URL(redirectPath, window.location.origin).toString();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+await setPersistence(auth, browserLocalPersistence);
 
-      const acs = {
-        url,                 // 例: https://<current-site>.web.app/login.html
-        handleCodeInApp: true
-        // dynamicLinkDomain 等があればここに追加
-      };
-      try {
-        await sendSignInLinkToEmail(auth, email, acs);
-        window.localStorage.setItem('emailForSignIn', email);
-        document.getElementById('ml-status').textContent = "サインイン用リンクを送信しました。メールをご確認ください。";
-      } catch (e) {
-        alert("メールリンク送信エラー: " + e.message + " (code=" + e.code + ")");
-      }
-    };
+function setStatus(message, mode="muted"){
+  const el = document.getElementById("ml-status");
+  el.textContent = message || "";
+  el.className = mode;
+}
 
-    // メール内リンクから戻ってきた場合の完了処理
-    if (isSignInWithEmailLink(auth, window.location.href)) {
-      let email = window.localStorage.getItem('emailForSignIn') || window.prompt('社内メールアドレスを入力してください:');
-      if (!allowDomain(email)) {
-        alert("社内メールのみ許可されています");
-      } else {
-        signInWithEmailLink(auth, email, window.location.href)
-          .then(() => {
-            window.localStorage.removeItem('emailForSignIn');
-            document.getElementById('ml-status').textContent = "サインイン完了しました。ポータルを開いてください。";
-          })
-          .catch(err => alert("リンク完了エラー: " + err.message + " (code=" + err.code + ")"));
-      }
+function showPassword(prefillEmail=""){
+  document.getElementById("password-login").style.display = "block";
+  if(prefillEmail){
+    document.getElementById("pw-email").value = prefillEmail;
+  }
+}
+
+function startFallbackCountdown(email){
+  clearTimeout(fallbackTimer);
+  setStatus("メールを送信しました。30秒待って届かない場合は、パスワードログイン欄を表示します。");
+
+  fallbackTimer = setTimeout(() => {
+    if (!auth.currentUser) {
+      setStatus("30秒経過してもログインが完了していないため、パスワードログインを表示しました。", "warn");
+      showPassword(email);
     }
+  }, 30000);
+}
 
-    // ===== 共通：状態変化 =====
-    onAuthStateChanged(auth, (user) => {
-      document.getElementById('loading').style.display = 'none';
-      const signed = document.getElementById('signed');
-      const form   = document.getElementById('form');
-      if (user) {
-        form.style.display   = 'none';
-        signed.style.display = 'block';
-        document.getElementById('who').textContent = user.email || "(signed-in)";
-      } else {
-        signed.style.display = 'none';
-        form.style.display   = 'block';
-      }
+function stopFallbackCountdown(){
+  clearTimeout(fallbackTimer);
+  fallbackTimer = null;
+}
+
+window.showPassword = () => {
+  const email = document.getElementById("ml-email").value.trim();
+  showPassword(email);
+};
+
+window.sendLink = async () => {
+  const email = document.getElementById("ml-email").value.trim();
+
+  if(!allowDomain(email)){
+    alert("社内メールのみ許可されています");
+    return;
+  }
+
+  const url = new URL("/login.html", window.location.origin).toString();
+
+  try{
+    await sendSignInLinkToEmail(auth, email, {
+      url,
+      handleCodeInApp: true
     });
+    localStorage.setItem("emailForSignIn", email);
+    startFallbackCountdown(email);
+  }catch(e){
+    console.error(e);
+    setStatus("メール認証失敗。パスワードログインを使用してください。", "warn");
+    showPassword(email);
+  }
+};
 
-    window.doLogout = () => signOut(auth);
-  </script>
+window.passwordLogin = async () => {
+  const email = document.getElementById("pw-email").value.trim();
+  const password = document.getElementById("pw-password").value;
+
+  if(!allowDomain(email)){
+    alert("社内メールのみ許可されています");
+    return;
+  }
+  if(!password){
+    alert("パスワードを入力してください");
+    return;
+  }
+
+  try{
+    await signInWithEmailAndPassword(auth, email, password);
+    stopFallbackCountdown();
+  }catch(e){
+    console.error(e);
+    alert("ログイン失敗: " + e.message + " (code=" + e.code + ")");
+  }
+};
+
+if(isSignInWithEmailLink(auth, location.href)){
+  let email = localStorage.getItem("emailForSignIn") || prompt("メールアドレス入力");
+  if(allowDomain(email)){
+    signInWithEmailLink(auth, email, location.href)
+      .then(() => {
+        localStorage.removeItem("emailForSignIn");
+        stopFallbackCountdown();
+        setStatus("メール認証でログインしました。");
+      })
+      .catch((e) => {
+        console.error(e);
+        setStatus("メール認証に失敗しました。パスワードログインを使用してください。", "warn");
+        showPassword(email);
+      });
+  } else {
+    alert("社内メールのみ許可されています");
+  }
+}
+
+onAuthStateChanged(auth, user => {
+  document.getElementById("loading").style.display = "none";
+  const form = document.getElementById("form");
+  const signed = document.getElementById("signed");
+
+  if(user){
+    stopFallbackCountdown();
+    form.style.display = "none";
+    signed.style.display = "block";
+    document.getElementById("who").textContent = user.email || "(signed-in)";
+  }else{
+    signed.style.display = "none";
+    form.style.display = "block";
+  }
+});
+
+window.doLogout = async () => {
+  stopFallbackCountdown();
+  await signOut(auth);
+};
+</script>
 </head>
+
 <body>
-  <h1>ログイン</h1>
+<h1>ログイン</h1>
 
-  <div id="loading" class="card">Loading...</div>
+<div id="loading" class="card">Loading...</div>
 
-  <div id="form" style="display:none;">
-    <div class="card">
-      <h3>メールリンクでサインイン</h3>
-      <p class="muted">
-        社内メールアドレスにサインイン用リンクを送付します。
-      </p>
-      <input id="ml-email" type="email" placeholder="your.name@cisco.com" />
-      <button class="btn" onclick="sendLink()">リンクを送る</button>
-      <p id="ml-status" class="muted"></p>
-    </div>
+<div id="form" style="display:none;">
+
+  <div class="card">
+    <h3>メールリンクでサインイン</h3>
+    <p class="muted">社内メールアドレスにサインイン用リンクを送付します。</p>
+
+    <input id="ml-email" type="email" placeholder="your.name@cisco.com">
+
+    <button class="btn" onclick="sendLink()">リンクを送る</button>
+    <button class="btn" onclick="showPassword()">パスワードでログイン</button>
+
+    <p id="ml-status" class="muted"></p>
   </div>
 
-  <div id="signed" class="card" style="display:none;">
-    <div>Signed in as: <strong id="who"></strong></div>
-    <p class="muted">サインイン済みです。以下からポータルを開いてください。</p>
-    <a class="btn" href="/" target="_blank">ポータルを開く</a>
-    <button class="btn" onclick="doLogout()">Sign out</button>
+  <div id="password-login" class="card" style="display:none;">
+    <h3>パスワードログイン</h3>
+    <p class="muted">メール認証が届かない場合はこちらを使用してください。</p>
+
+    <input id="pw-email" type="email" placeholder="your.name@cisco.com">
+    <input id="pw-password" type="password" placeholder="password">
+
+    <button class="btn" onclick="passwordLogin()">ログイン</button>
   </div>
 
-  <div class="card muted">
-    <strong>管理者向けチェック</strong>
-    <ol>
-      <li>Authentication → サインイン方法：<b>Email link (passwordless)</b> を <b>ON</b>、<b>Email/Password</b> は <b>OFF</b></li>
-      <li>Authentication → 設定 → <b>Authorized domains</b>：<code>&lt;projectId&gt;.firebaseapp.com</code> / <code>&lt;site-id&gt;.web.app</code>（stg と prod の両方・カスタムドメインがあればそれも）を追加</li>
-      <li>メールリンクの戻り先（actionCodeSettings.url）：このファイルは <code>window.location.origin</code> 基準で動作（stg→stg / prod→prod）</li>
-      <li>必要に応じて ALLOWED_DOMAINS（例: <code>["cisco.com"]</code>）を調整</li>
-    </ol>
-  </div>
+</div>
+
+<div id="signed" class="card" style="display:none;">
+  Signed in as <b id="who"></b>
+  <p>
+    <a class="btn" href="/">ポータルを開く</a>
+    <button class="btn" onclick="doLogout()">Logout</button>
+  </p>
+</div>
+
 </body>
 </html>
