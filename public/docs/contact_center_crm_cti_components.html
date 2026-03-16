@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>コンタクトセンターのCRM・CTI・主要コンポーネント入門</title>
+  <style>
+    body { font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, Arial, sans-serif; background:#ffffff; color:#111; line-height:1.75; margin:0; }
+    main { max-width: 980px; margin: 24px auto; padding: 24px; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); background:#fff; }
+    h1, h2, h3 { color:#0b4a6f; }
+    h1 { margin:0 0 10px; }
+    h2 { margin:26px 0 8px; }
+    h3 { margin:18px 0 6px; }
+    p { margin: 0 0 12px; }
+    ul { margin:8px 0 8px 20px; }
+    .note { background:#e0f2fe; border-left:6px solid #0ea5e9; padding:12px; border-radius:6px; margin:12px 0; }
+    .card { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px; margin:12px 0; }
+    .cols { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:12px; }
+    table { width:100%; border-collapse:collapse; margin: 12px 0; font-size:14px; }
+    th, td { border:1px solid #e5e7eb; padding:8px; text-align:left; vertical-align:top; }
+    th { background:#f1f5f9; }
+    pre.seq { background:#0f172a; color:#e5e7eb; border-radius:8px; padding:12px; overflow:auto; border:1px solid #0b4a6f22; }
+    .summary { background:#fff7ed; border:1px solid #fde68a; border-radius:10px; padding:14px; }
+    .tag { display:inline-block; font-size:12px; padding:2px 8px; border-radius:999px; border:1px solid #e5e7eb; background:#f8fafc; margin-right:6px; }
+    .diagram { background:#ffffff; border:1px solid #dbe3ea; border-radius:10px; padding:10px; margin:12px 0; overflow:auto; }
+    .diagram svg { width:100%; height:auto; display:block; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>コンタクトセンターのCRM・CTI・主要コンポーネント入門</h1>
+  <p>コンタクトセンターは、単なる電話受付ではなく、<b>顧客情報</b>と<b>対応チャネル</b>を一体で扱う業務システムです。ここでは、特に混同しやすい <b>CRM</b> と <b>CTI</b> を中心に、全体像をわかりやすく整理します。</p>
+
+  <div class="note">
+    <strong>最初に結論:</strong>
+    <span class="tag">CRM = 顧客情報と業務管理の中枢</span>
+    <span class="tag">CTI = 電話とシステムをつなぐ制御層</span>
+    <span class="tag">両者を連携して初めて運用効率が上がる</span>
+  </div>
+
+  <h2>1) まず全体像をひと言で</h2>
+  <div class="card">
+    <p>顧客から電話・メール・チャットが来ると、<b>CTI</b> が着信制御やオペレーター振り分けを行い、<b>CRM</b> が顧客情報や対応履歴を表示・記録します。つまり、</p>
+    <ul>
+      <li><b>CTI</b> は「今この通話をどう処理するか」を担当</li>
+      <li><b>CRM</b> は「この顧客にどう対応し続けるか」を担当</li>
+    </ul>
+  </div>
+
+  <h2>2) CRMとは</h2>
+  <div class="card">
+    <h3>役割</h3>
+    <p>CRM（Customer Relationship Management）は、顧客との関係を継続的に管理するための基盤です。</p>
+    <h3>主な機能</h3>
+    <ul>
+      <li>顧客マスタ管理（氏名、契約、購入履歴、問い合わせ履歴）</li>
+      <li>ケース管理（問い合わせチケットの起票、進捗、担当者）</li>
+      <li>対応履歴管理（通話メモ、メール履歴、チャットログ）</li>
+      <li>レポート（応答品質、解決率、顧客満足度の分析）</li>
+    </ul>
+    <p><b>ポイント:</b> CRMがあると、担当者が変わっても過去経緯を引き継げるため、顧客対応の一貫性が上がります。</p>
+  </div>
+
+  <h2>3) CTIとは</h2>
+  <div class="card">
+    <h3>役割</h3>
+    <p>CTI（Computer Telephony Integration）は、電話システムと業務アプリを連携する仕組みです。</p>
+    <h3>主な機能</h3>
+    <ul>
+      <li>着信ポップアップ（受電時に顧客情報を自動表示）</li>
+      <li>画面から発信（クリックトゥコール）</li>
+      <li>通話制御（保留、転送、会議、切断）</li>
+      <li>通話イベント連携（着信開始、応答、終了時刻をCRMへ記録）</li>
+    </ul>
+    <p><b>ポイント:</b> CTIは通話そのものを最適化し、オペレーターの操作負荷を下げます。</p>
+  </div>
+
+  <h2>4) そのほかの主要コンポーネント</h2>
+  <div class="card">
+    <h3>図1: コンタクトセンターの構成イメージ</h3>
+    <div class="diagram" role="img" aria-label="コンタクトセンターの主要コンポーネント連携図">
+      <svg viewBox="0 0 980 390" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L10,3 L0,6 Z" fill="#4b5563" />
+          </marker>
+        </defs>
+        <rect x="20" y="30" width="180" height="70" rx="10" fill="#e0f2fe" stroke="#0ea5e9" />
+        <text x="110" y="60" text-anchor="middle" font-size="16" fill="#0f172a">顧客チャネル</text>
+        <text x="110" y="82" text-anchor="middle" font-size="13" fill="#334155">電話 / メール / チャット</text>
+
+        <rect x="260" y="30" width="170" height="70" rx="10" fill="#ecfeff" stroke="#06b6d4" />
+        <text x="345" y="60" text-anchor="middle" font-size="16" fill="#0f172a">IVR / ACD</text>
+        <text x="345" y="82" text-anchor="middle" font-size="13" fill="#334155">振り分け・分配</text>
+
+        <rect x="490" y="30" width="170" height="70" rx="10" fill="#f0f9ff" stroke="#0284c7" />
+        <text x="575" y="60" text-anchor="middle" font-size="16" fill="#0f172a">CTI</text>
+        <text x="575" y="82" text-anchor="middle" font-size="13" fill="#334155">通話制御・イベント</text>
+
+        <rect x="720" y="30" width="230" height="70" rx="10" fill="#eff6ff" stroke="#3b82f6" />
+        <text x="835" y="60" text-anchor="middle" font-size="16" fill="#0f172a">CRM</text>
+        <text x="835" y="82" text-anchor="middle" font-size="13" fill="#334155">顧客情報・履歴・ケース</text>
+
+        <rect x="720" y="160" width="230" height="70" rx="10" fill="#f8fafc" stroke="#94a3b8" />
+        <text x="835" y="190" text-anchor="middle" font-size="16" fill="#0f172a">ナレッジ / FAQ</text>
+        <text x="835" y="212" text-anchor="middle" font-size="13" fill="#334155">回答テンプレート</text>
+
+        <rect x="490" y="160" width="170" height="70" rx="10" fill="#f8fafc" stroke="#94a3b8" />
+        <text x="575" y="190" text-anchor="middle" font-size="16" fill="#0f172a">録音 / QA</text>
+        <text x="575" y="212" text-anchor="middle" font-size="13" fill="#334155">品質評価</text>
+
+        <rect x="260" y="160" width="170" height="70" rx="10" fill="#f8fafc" stroke="#94a3b8" />
+        <text x="345" y="190" text-anchor="middle" font-size="16" fill="#0f172a">WFM</text>
+        <text x="345" y="212" text-anchor="middle" font-size="13" fill="#334155">要員計画・シフト</text>
+
+        <line x1="200" y1="65" x2="260" y2="65" stroke="#4b5563" stroke-width="2" marker-end="url(#arr)" />
+        <line x1="430" y1="65" x2="490" y2="65" stroke="#4b5563" stroke-width="2" marker-end="url(#arr)" />
+        <line x1="660" y1="65" x2="720" y2="65" stroke="#4b5563" stroke-width="2" marker-end="url(#arr)" />
+
+        <line x1="575" y1="100" x2="575" y2="160" stroke="#6b7280" stroke-width="2" marker-end="url(#arr)" />
+        <line x1="835" y1="100" x2="835" y2="160" stroke="#6b7280" stroke-width="2" marker-end="url(#arr)" />
+        <line x1="720" y1="195" x2="660" y2="195" stroke="#6b7280" stroke-width="2" marker-end="url(#arr)" />
+        <line x1="490" y1="195" x2="430" y2="195" stroke="#6b7280" stroke-width="2" marker-end="url(#arr)" />
+
+        <text x="490" y="260" font-size="13" fill="#334155">CRMが顧客軸の情報を保持し、CTI/ACD/IVRがリアルタイム応対を制御</text>
+      </svg>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>コンポーネント</th><th>何をするか</th><th>CRM/CTIとの関係</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>ACD</td><td>着信を適切なオペレーターへ自動分配</td><td>CTIと連携してスキルベースルーティングを実現</td></tr>
+      <tr><td>IVR</td><td>音声ガイダンスで要件を事前振り分け</td><td>入力情報をCTI経由でCRMに引き渡す</td></tr>
+      <tr><td>WFM</td><td>人員計画・シフト最適化</td><td>CRMの件数実績やACD実績を使って予測精度を向上</td></tr>
+      <tr><td>録音/QA</td><td>通話録音と品質評価</td><td>評価結果をCRMケースに紐付けて改善に活用</td></tr>
+      <tr><td>FAQ/ナレッジ</td><td>回答テンプレートや手順を管理</td><td>CRM画面内から参照し、応対時間短縮に寄与</td></tr>
+      <tr><td>オムニチャネル</td><td>電話・メール・チャット・SNSを統合</td><td>CRMで顧客軸に履歴統合、CTIは主に音声チャネル担当</td></tr>
+    </tbody>
+  </table>
+
+  <h2>5) 実際の処理フロー（電話問い合わせの例）</h2>
+  <div class="card">
+    <h3>図2: 電話問い合わせフロー（簡易）</h3>
+    <div class="diagram" role="img" aria-label="電話問い合わせフロー図">
+      <svg viewBox="0 0 980 240" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr2" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L10,3 L0,6 Z" fill="#4b5563" />
+          </marker>
+        </defs>
+
+        <rect x="20" y="70" width="110" height="70" rx="10" fill="#e0f2fe" stroke="#0ea5e9"/>
+        <text x="75" y="112" text-anchor="middle" font-size="14" fill="#0f172a">顧客</text>
+
+        <rect x="170" y="70" width="130" height="70" rx="10" fill="#ecfeff" stroke="#06b6d4"/>
+        <text x="235" y="100" text-anchor="middle" font-size="14" fill="#0f172a">IVR</text>
+        <text x="235" y="120" text-anchor="middle" font-size="12" fill="#334155">要件選択</text>
+
+        <rect x="340" y="70" width="130" height="70" rx="10" fill="#ecfeff" stroke="#06b6d4"/>
+        <text x="405" y="100" text-anchor="middle" font-size="14" fill="#0f172a">ACD</text>
+        <text x="405" y="120" text-anchor="middle" font-size="12" fill="#334155">担当へ分配</text>
+
+        <rect x="510" y="70" width="130" height="70" rx="10" fill="#f0f9ff" stroke="#0284c7"/>
+        <text x="575" y="100" text-anchor="middle" font-size="14" fill="#0f172a">CTI</text>
+        <text x="575" y="120" text-anchor="middle" font-size="12" fill="#334155">通話イベント</text>
+
+        <rect x="680" y="70" width="130" height="70" rx="10" fill="#eff6ff" stroke="#3b82f6"/>
+        <text x="745" y="100" text-anchor="middle" font-size="14" fill="#0f172a">CRM</text>
+        <text x="745" y="120" text-anchor="middle" font-size="12" fill="#334155">情報表示・記録</text>
+
+        <rect x="850" y="70" width="110" height="70" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+        <text x="905" y="100" text-anchor="middle" font-size="14" fill="#0f172a">対応完了</text>
+        <text x="905" y="120" text-anchor="middle" font-size="12" fill="#334155">後処理</text>
+
+        <line x1="130" y1="105" x2="170" y2="105" stroke="#4b5563" stroke-width="2" marker-end="url(#arr2)" />
+        <line x1="300" y1="105" x2="340" y2="105" stroke="#4b5563" stroke-width="2" marker-end="url(#arr2)" />
+        <line x1="470" y1="105" x2="510" y2="105" stroke="#4b5563" stroke-width="2" marker-end="url(#arr2)" />
+        <line x1="640" y1="105" x2="680" y2="105" stroke="#4b5563" stroke-width="2" marker-end="url(#arr2)" />
+        <line x1="810" y1="105" x2="850" y2="105" stroke="#4b5563" stroke-width="2" marker-end="url(#arr2)" />
+
+        <text x="490" y="180" text-anchor="middle" font-size="13" fill="#334155">着信から記録までを一連でつなぐことで、応対スピードと品質を両立</text>
+      </svg>
+    </div>
+  </div>
+
+  <pre class="seq">1. 顧客が電話をかける
+2. IVRが要件を確認（例: 契約変更は1番）
+3. ACDが最適な担当グループへ振り分け
+4. CTIが着信イベントを検知し、CRMに連携
+5. オペレーター画面に顧客情報と過去履歴をポップアップ
+6. 応対中にCRMへメモ・ステータス更新
+7. 通話終了時に通話時間・結果コードをCRMへ自動記録
+8. 必要なら後処理タスクをCRMで起票し、他部門へ連携</pre>
+
+  <h2>6) 導入時によくある課題</h2>
+  <div class="cols">
+    <div class="card">
+      <h3>よくある失敗</h3>
+      <ul>
+        <li>CTI導入だけで完結し、CRM側のデータ整備が不十分</li>
+        <li>チャネル別に履歴が分散し、顧客単位で見えない</li>
+        <li>応対コード設計が曖昧で、分析に使えない</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>回避のコツ</h3>
+      <ul>
+        <li>最初に「顧客IDの統一ルール」を決める</li>
+        <li>応対結果コードと業務プロセスを同時に設計する</li>
+        <li>CRM、CTI、ACD、WFMの連携データ項目を先に定義する</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>7) まとめ</h2>
+  <div class="summary">
+    <p><b>CRM</b> は顧客情報と業務履歴を管理する土台、<b>CTI</b> は電話運用を自動化する連携基盤です。さらにACD、IVR、WFM、品質管理、ナレッジを組み合わせることで、<b>応答速度</b>と<b>解決品質</b>の両方を改善できます。</p>
+    <p>「電話を取る仕組み」だけでなく、「顧客体験を継続的に改善する仕組み」まで含めて設計することが、コンタクトセンター成功の鍵です。</p>
+  </div>
+</main>
+</body>
+</html>
