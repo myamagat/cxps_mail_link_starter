@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>コンタクトセンターでよく聞く「Finess」入門</title>
+  <style>
+    body { font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, Arial, sans-serif; background:#ffffff; color:#111; line-height:1.75; margin:0; }
+    main { max-width: 980px; margin: 24px auto; padding: 24px; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); background:#fff; }
+    h1, h2, h3 { color:#0b4a6f; }
+    h1 { margin:0 0 10px; }
+    h2 { margin:26px 0 8px; }
+    h3 { margin:18px 0 6px; }
+    p { margin: 0 0 12px; }
+    ul { margin:8px 0 8px 20px; }
+    table { width:100%; border-collapse:collapse; margin: 12px 0; font-size:14px; }
+    th, td { border:1px solid #e5e7eb; padding:8px; text-align:left; vertical-align:top; }
+    th { background:#f1f5f9; }
+    .note { background:#e0f2fe; border-left:6px solid #0ea5e9; padding:12px; border-radius:6px; margin:12px 0; }
+    .card { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px; margin:12px 0; }
+    .cols { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:12px; }
+    .summary { background:#fff7ed; border:1px solid #fde68a; border-radius:10px; padding:14px; }
+    .tag { display:inline-block; font-size:12px; padding:2px 8px; border-radius:999px; border:1px solid #e5e7eb; background:#f8fafc; margin-right:6px; }
+    pre.seq { background:#0f172a; color:#e5e7eb; border-radius:8px; padding:12px; overflow:auto; border:1px solid #0b4a6f22; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>コンタクトセンターでよく聞く「Finess」入門</h1>
+  <p>コンタクトセンター運用の会話でよく出る「Finess」は、実務上は Cisco の <b>Finesse</b> を指していることがほとんどです。本ページでは、名称の混同を整理しつつ、現場で押さえるべき役割と使いどころを短くまとめます。</p>
+
+  <div class="note">
+    <strong>最初に結論:</strong>
+    <span class="tag">Finess = Finesse の呼び方違いで使われがち</span>
+    <span class="tag">Finesse はオペレーター向けデスクトップ</span>
+    <span class="tag">通話制御と顧客対応画面をつなぐ要</span>
+  </div>
+
+  <h2>1) Finess (Finesse) とは何か</h2>
+  <div class="card">
+    <p><b>Finesse</b> は、コンタクトセンターのオペレーターやスーパーバイザーがブラウザで使う運用画面です。主な役割は次の2つです。</p>
+    <ul>
+      <li><b>オペレーター状態の管理:</b> ログイン、Ready/Not Ready、離席理由コードの設定</li>
+      <li><b>通話・応対操作:</b> 受話、保留、転送、会議、後処理コード入力</li>
+    </ul>
+    <p>単なる電話UIではなく、ACD/CTIとCRM連携を現場で使える形にまとめる「業務ハブ」に近い位置づけです。</p>
+  </div>
+
+  <h2>2) どの仕組みとつながっているか</h2>
+  <table>
+    <thead>
+      <tr><th>連携先</th><th>Finesse から見た役割</th><th>現場効果</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>ACD</td><td>着信分配結果を受けて担当へ提示</td><td>適切な担当へ迅速に接続</td></tr>
+      <tr><td>CTI</td><td>通話イベントと操作命令を連携</td><td>画面操作と通話状態を同期</td></tr>
+      <tr><td>CRM</td><td>顧客情報・過去履歴を表示</td><td>毎回の聞き直しを減らす</td></tr>
+      <tr><td>レポート基盤</td><td>状態遷移・応対結果を記録</td><td>KPI可視化と改善に活用</td></tr>
+    </tbody>
+  </table>
+
+  <h2>3) よく使う用語</h2>
+  <div class="cols">
+    <div class="card">
+      <h3>Agent State</h3>
+      <p>Ready / Not Ready / Talking など、受電可能かどうかを示す状態です。運用ルールが曖昧だと稼働率分析が崩れます。</p>
+    </div>
+    <div class="card">
+      <h3>Reason Code</h3>
+      <p>Not Ready の理由や後処理結果を分類するコードです。分析の粒度を決めるため、先に設計することが重要です。</p>
+    </div>
+    <div class="card">
+      <h3>Wrap-up / After Call Work</h3>
+      <p>通話後の記録・分類時間です。短縮しすぎると品質低下、長すぎると応答率低下につながるためバランス管理が必要です。</p>
+    </div>
+  </div>
+
+  <h2>4) 典型的な業務フロー</h2>
+  <pre class="seq">1. オペレーターが Finesse にログインして Ready にする
+2. ACD がスキル条件に合う着信を配分
+3. Finesse に着信通知、同時に CRM 画面で顧客情報を表示
+4. 応対中に保留・転送・会議などを操作
+5. 通話終了後、Wrap-up コードとメモを登録
+6. 状態を Ready に戻して次の着信を待機</pre>
+
+  <h2>5) 導入・運用でつまずきやすい点</h2>
+  <div class="cols">
+    <div class="card">
+      <h3>よくある課題</h3>
+      <ul>
+        <li>Reason Code が多すぎて現場が入力しない</li>
+        <li>CRM 連携項目が不足し、ポップアップが役に立たない</li>
+        <li>Agent State の運用ルールがチームごとにバラバラ</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>改善のコツ</h3>
+      <ul>
+        <li>コード体系は「分析に必要な最小限」に絞る</li>
+        <li>スーパーバイザー画面で状態逸脱を毎日レビューする</li>
+        <li>CRM 連携項目は実運用のヒアリングで定期見直しする</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>6) まとめ</h2>
+  <div class="summary">
+    <p>「Finess」という言い方は現場でよく使われますが、実体としては <b>Finesse</b> を指すことが一般的です。Finesse は、電話制御と顧客対応をつなぐオペレーター業務の中心画面であり、ACD/CTI/CRM運用の接点になります。</p>
+    <p>導入効果を最大化するには、画面機能よりも <b>状態管理ルール</b> と <b>コード設計</b> を先に固めることが重要です。</p>
+  </div>
+</main>
+</body>
+</html>
