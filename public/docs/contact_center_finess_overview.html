@@ -22,6 +22,7 @@
     .summary { background:#fff7ed; border:1px solid #fde68a; border-radius:10px; padding:14px; }
     .tag { display:inline-block; font-size:12px; padding:2px 8px; border-radius:999px; border:1px solid #e5e7eb; background:#f8fafc; margin-right:6px; }
     pre.seq { background:#0f172a; color:#e5e7eb; border-radius:8px; padding:12px; overflow:auto; border:1px solid #0b4a6f22; }
+    pre.cmd { background:#f8fafc; color:#111827; border-radius:8px; padding:12px; overflow:auto; border:1px solid #cbd5e1; }
   </style>
 </head>
 <body>
@@ -103,7 +104,60 @@
     </div>
   </div>
 
-  <h2>6) まとめ</h2>
+  <h2>6) Finesse ベースで CTI クライアントを開発する際の注意事項</h2>
+  <div class="card">
+    <p>ここからは、実際に <b>Cisco Finesse をベースに独自 CTI クライアント</b>を作るときの実務チェックです。PoC では動いても本番で止まりやすいポイントを優先して並べています。</p>
+  </div>
+
+  <h3>6-1. 接続方式と CCX 側設定を先に固める</h3>
+  <table>
+    <thead>
+      <tr><th>確認項目</th><th>注意点</th><th>実務メモ</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>XMPP 利用有無</td><td>Finesse イベント連携は XMPP 系の設定が前提になる</td><td>UCCX 側で XMPP 関連設定が有効かを最初に確認</td></tr>
+      <tr><td>Openfire/ポート方針</td><td>検証では非 TLS ポートを使う場合があるが、本番は TLS 優先</td><td>FW とロードバランサの許可範囲を事前整理</td></tr>
+      <tr><td>REST API 連携</td><td>操作系 API とイベント購読の責務分離が必要</td><td>再接続時の再サブスクライブ処理を実装</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>例（CCX 側）:</strong> 検証で非 TLS 側を使う場合の代表的な設定例
+    <pre class="cmd">utils finesse set_property webservices enableInsecureOpenfirePort true</pre>
+    <p>本番運用では、可能な限り TLS ポートと証明書検証を前提にする構成が推奨です。</p>
+  </div>
+
+  <h3>6-2. 証明書と TLS 検証を最優先で設計する</h3>
+  <ul>
+    <li>CCX/Tomcat 証明書をクライアント側トラストストアにインポートして、自己署名・中間証明書不足を先に解消する。</li>
+    <li>証明書の CN/SAN と接続先 FQDN が一致しているかを確認し、IP 直指定は避ける。</li>
+    <li>証明書更新時の切替手順（再配布、再起動、ロールバック）を運用手順に含める。</li>
+  </ul>
+
+  <h3>6-3. 実装でハマりやすいポイント</h3>
+  <ul>
+    <li>ログインセッション期限切れ時の再認証とイベント再購読を自動化する。</li>
+    <li>Agent State 更新は「冪等」前提で設計し、二重送信時の競合を吸収する。</li>
+    <li>切断検知後の再接続は固定間隔ではなく指数バックオフを使い、CCX への負荷集中を回避する。</li>
+    <li>操作ログとイベントログに共通の相関 ID を付与し、障害調査を短時間化する。</li>
+  </ul>
+
+  <h3>6-4. 互換性・性能・運用のチェックリスト</h3>
+  <ul>
+    <li>対象バージョン（UCCX/Finesse）の API 仕様差分を事前に棚卸しする。</li>
+    <li>ピーク時同時ログイン数での通知遅延と再接続時間を計測する。</li>
+    <li>ネットワーク断、Finesse 再起動、証明書失効の障害注入テストを行う。</li>
+    <li>監視項目に「接続数」「再接続回数」「認証失敗率」「イベント遅延」を入れる。</li>
+  </ul>
+
+  <h3>6-5. 最低限の導入順序（推奨）</h3>
+  <pre class="cmd">1. UCCX/Finesse バージョンと API 方針を確定
+2. XMPP/REST 接続要件と FW 開放要件を確定
+3. Tomcat 証明書を配布して TLS 検証を通す
+4. ログイン/状態遷移/通話操作/再接続の順で実装
+5. 障害注入テストを通してから本番展開</pre>
+
+  <h2>7) まとめ</h2>
   <div class="summary">
     <p>「Finess」という言い方は現場でよく使われますが、実体としては <b>Finesse</b> を指すことが一般的です。Finesse は、電話制御と顧客対応をつなぐオペレーター業務の中心画面であり、ACD/CTI/CRM運用の接点になります。</p>
     <p>導入効果を最大化するには、画面機能よりも <b>状態管理ルール</b> と <b>コード設計</b> を先に固めることが重要です。</p>
