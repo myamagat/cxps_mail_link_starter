@@ -1,0 +1,5 @@
+# Tomcat9 サービスの Java Options 例
+# (同一Tomcatプロセス内の全WARに影響するため、共通設定向け)
+
+-Dspring.config.additional-location=file:/C:/apps-config/common/
+-Dlogging.config=file:/C:/apps-config/common/logback-spring.xml

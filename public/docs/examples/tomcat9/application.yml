@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: app1
+
+server:
+  servlet:
+    context-path: /app1
+
+logging:
+  level:
+    root: INFO
+    com.example: DEBUG
+
+app:
+  feature:
+    sample-enabled: true

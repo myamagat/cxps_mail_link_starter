@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context docBase="C:/tomcat9/webapps/app1.war">
+  <!-- application.yml を置くディレクトリ -->
+  <Environment name="app.config.dir"
+               value="C:/apps-config/app1/"
+               type="java.lang.String"
+               override="false" />
+
+  <!-- logback(xml) ファイルのフルパス -->
+  <Environment name="app.logging.config"
+               value="C:/apps-config/app1/logback-spring.xml"
+               type="java.lang.String"
+               override="false" />
+</Context>
