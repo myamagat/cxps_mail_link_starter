@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>STUN と Cisco CUBE における ICE Lite 設定</title>
+  <style>
+    body { font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, Arial, sans-serif; background:#ffffff; color:#111; line-height:1.75; margin:0; }
+    main { max-width: 1000px; margin: 24px auto; padding: 24px; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); background:#fff; }
+    h1, h2, h3 { color:#0b4a6f; }
+    h1 { margin:0 0 10px; }
+    h2 { margin:26px 0 8px; }
+    h3 { margin:18px 0 6px; }
+    p { margin: 0 0 12px; }
+    .note { background:#e0f2fe; border-left:6px solid #0ea5e9; padding:12px; border-radius:6px; margin:12px 0; }
+    .card { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px; margin:12px 0; }
+    .warning { background:#fed7aa; border-left:6px solid #f97316; padding:12px; border-radius:6px; margin:12px 0; }
+    table { width:100%; border-collapse:collapse; margin: 12px 0; font-size:14px; }
+    th, td { border:1px solid #e5e7eb; padding:8px; text-align:left; vertical-align:top; }
+    th { background:#f1f5f9; }
+    code { background:#f1f5f9; border:1px solid #e5e7eb; padding:2px 6px; border-radius:6px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+    pre { background:#f1f5f9; border:1px solid #d1d5db; border-radius:8px; padding:14px; overflow:auto; font-size:13px; color:#111; }
+    ul, ol { margin:8px 0 8px 20px; }
+    li { margin:6px 0; }
+    .summary { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:14px; margin:12px 0; }
+    .pill { display:inline-block; font-size:12px; padding:3px 10px; border-radius:999px; border:1px solid #e5e7eb; background:#f8fafc; margin-right:6px; margin-bottom:4px; }
+    .tech { background:#dbeafe; border-color:#93c5fd; }
+    .diagram { background:#faf5ff; border:1px solid #e9d5ff; border-radius:8px; padding:16px; margin:12px 0; }
+    strong { color:#0b4a6f; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>🌐 STUN と Cisco CUBE における「stun usage ice lite」設定の解説</h1>
+  <p>NAT/ファイアウォール環境での VoIP（SIP）通信を可能にするための <strong>STUN プロトコル</strong> と、Cisco CUBE での <strong>ICE Lite（Interactive Connectivity Establishment - Lite）</strong> の設定・概念を、実装者向けに解説します。</p>
+
+  <div class="summary">
+    <strong>ざっくり結論:</strong><br>
+    <span class="pill tech">STUN = グローバルIP/ポート検出</span>
+    <span class="pill tech">ICE Lite = 簡易版ICE（呼出側で複雑性を負担）</span><br>
+    <span class="pill tech">Cisco CUBE = NAT越え時に必須</span>
+  </div>
+
+  <!-- ==================== セクション 1 ==================== -->
+  <h2>1) STUN（Session Traversal Utilities for NAT）とは</h2>
+
+  <div class="card">
+    <h3>概要</h3>
+    <p>STUN は、<strong>NAT/ファイアウォール配下の端末が、グローバルネットワークから見えるIP/ポート番号を自動的に検出する</strong>ためのプロトコル（RFC 3489 → RFC 5389 で標準化）です。</p>
+    <p><strong>用途:</strong> VoIP（SIP）、ビデオ会議、P2P通信など、直接通信が必要なリアルタイムアプリケーションで使用されます。</p>
+  </div>
+
+  <h3>STUN の動作フロー</h3>
+  <div class="diagram">
+    <pre>┌────────────────────────────────────────┐
+│ NAT内部の端末                            │
+│ (LAN IP: 192.168.1.100:5060)            │
+└──────────┬─────────────────────────────┘
+           │ STUN Request
+           │ (STUNサーバーへ)
+           ↓
+    STUNサーバー (例: stun.l.google.com)
+           │ STUN Response
+           │ 返答内容:
+           │ - グローバルIP: 203.0.113.50
+           │ - グローバルポート: 54321
+           ↓
+┌────────────────────────────────────────┐
+│ NAT内部の端末（学習後）                  │
+│ 自分は グローバルから見ると:             │
+│ 203.0.113.50:54321 として見える        │
+└────────────────────────────────────────┘</pre>
+  </div>
+
+  <h3>STUN が解決する問題</h3>
+  <ul>
+    <li><strong>NAT越えの不可視性:</strong> NAT内部からは、ルーターがどんなアドレス/ポートにマッピングしたかが見えない</li>
+    <li><strong>シグナリング側への通知:</strong> 相手方（SIP プロキシ/CUBE等）に「私はこのグローバルIP/ポートで受信できます」と伝える必要がある</li>
+    <li><strong>メディアパス確立:</strong> 双方が相手の本当のグローバルアドレスを知ることで、RTP ストリーム（音声/動画）が到達可能になる</li>
+  </ul>
+
+  <!-- ==================== セクション 2 ==================== -->
+  <h2>2) ICE（Interactive Connectivity Establishment）と ICE Lite</h2>
+
+  <div class="card">
+    <h3>ICE の目的</h3>
+    <p>ICE（RFC 5245）は、NAT経由で2つのピア間の<strong>最適な通信経路を自動判定</strong>するメカニズムです。</p>
+    <p>複数の候補ルート（直接接続、STUN経由、TURN経由など）を試し、実際に通信できるものを選択します。</p>
+  </div>
+
+  <h3>フル ICE vs ICE Lite の比較</h3>
+  <table>
+    <tr>
+      <th>項目</th>
+      <th>フル ICE</th>
+      <th>ICE Lite</th>
+    </tr>
+    <tr>
+      <td><strong>候補収集</strong></td>
+      <td>ホスト、STUN、TURN 候補を全て集める</td>
+      <td>ホスト候補のみ（STUN/TURN は使わない）</td>
+    </tr>
+    <tr>
+      <td><strong>接続性チェック</strong></td>
+      <td>複数候補を N×M でテスト（複雑）</td>
+      <td>受動的 - 相手からの接続要求に応答するのみ</td>
+    </tr>
+    <tr>
+      <td><strong>計算負荷</strong></td>
+      <td>高い（ピアが協力して最適路を探索）</td>
+      <td>低い（呼出側で複雑性を担当）</td>
+    </tr>
+    <tr>
+      <td><strong>用途</strong></td>
+      <td>WebRTC、P2P通信、外部ネットワーク間通信</td>
+      <td>エンタープライズ VoIP（Cisco CUBE等）</td>
+    </tr>
+    <tr>
+      <td><strong>NAT 対応</strong></td>
+      <td>複数 NAT でも対応可能</td>
+      <td>相手が NAT 側に居る場合、相手は STUN に対応が前提</td>
+    </tr>
+  </table>
+
+  <div class="note">
+    <strong>アーキテクチャ的な意味:</strong> ICE Lite は、<strong>呼出側が十分な能力を持つ</strong>環境（エンタープライズの SIP プロキシや CUBE）を想定し、受信側（CUBE）は単に相手からの接続を待つだけで済みます。
+  </div>
+
+  <!-- ==================== セクション 3 ==================== -->
+  <h2>3) Cisco CUBE での「stun usage ice lite」設定</h2>
+
+  <div class="card">
+    <h3>設定の意味</h3>
+    <p>Cisco CUBE で <code>stun usage ice lite</code> を有効化すると、以下が実行されます：</p>
+    <ul>
+      <li><strong>ICE Lite モードの使用:</strong> CUBE は受動的構成で、呼出側から的確な候補が送られてくることを前提に応答</li>
+      <li><strong>SDP への記載:</strong> CUBE が SIP メッセージに含まれる SDP（Session Description Protocol）で、自身の候補アドレスを明示</li>
+      <li><strong>STUN クライアント機能（オプション）:</strong> <code>stun server</code> コマンドで STUN サーバーが指定された場合のみ、CUBE が STUN サーバーに問い合わせてグローバル IP/ポートを検出</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <strong>重要:</strong> <code>stun server</code> の設定は<strong>オプション</strong>です。STUN サーバーが指定されなくても、<code>stun usage ice lite</code> は機能し、ホスト候補（LAN IP）のみを SDP に記載します。
+  </div>
+
+  <h3>最小限の設定（STUN サーバーなし）</h3>
+  <pre>voice service voip
+ stun
+  stun usage ice lite
+!
+</pre>
+  <p><strong>この設定だけでも ICE Lite は機能します。</strong>CUBE は自身のホスト候補（LAN IP）を SDP に記載し、呼出側が接続性チェックを実施します。</p>
+
+  <h3>STUN サーバーを指定した場合</h3>
+  <pre>voice service voip
+ stun
+  stun usage ice lite
+  stun server stun.l.google.com
+  stun server stun.stunprotocol.org
+!
+</pre>
+  <p><strong>STUN サーバーを指定すると、</strong>グローバル IP/ポート候補も SDP に追加され、相手方が複数の接続可能性を試すことができます。</p>
+
+  <h3>各コマンドの説明</h3>
+  <table>
+    <tr>
+      <th>コマンド</th>
+      <th>説明</th>
+      <th>必須?</th>
+    </tr>
+    <tr>
+      <td><code>voice service voip</code></td>
+      <td>VoIP サービスの設定コンテキストに入る（SIP レベルの各種設定）</td>
+      <td>✓ 必須</td>
+    </tr>
+    <tr>
+      <td><code>stun</code></td>
+      <td>STUN サブコンテキストに入る</td>
+      <td>✓ 必須</td>
+    </tr>
+    <tr>
+      <td><code>stun usage ice lite</code></td>
+      <td><strong>ICE Lite を有効化</strong>（Key 設定）</td>
+      <td>✓ 必須</td>
+    </tr>
+    <tr>
+      <td><code>stun server [IP|FQDN]</code></td>
+      <td>利用する STUN サーバーの指定（複数指定可）</td>
+      <td>○ オプション</td>
+    </tr>
+  </table>
+
+  <h3>推奨される STUN サーバー</h3>
+  <table>
+    <tr>
+      <th>STUN サーバー</th>
+      <th>特徴</th>
+    </tr>
+    <tr>
+      <td><code>stun.l.google.com:19302</code></td>
+      <td>Google 提供（信頼性高、広く使用）</td>
+    </tr>
+    <tr>
+      <td><code>stun1.l.google.com:19302</code></td>
+      <td>Google の冗長構成</td>
+    </tr>
+    <tr>
+      <td><code>stun.stunprotocol.org:3478</code></td>
+      <td>オープンコミュニティ提供</td>
+    </tr>
+    <tr>
+      <td><code>numb.viagenie.ca:3478</code></td>
+      <td>xiph.org/Freeswitch 関連</td>
+    </tr>
+  </table>
+
+  <!-- ==================== セクション 4 ==================== -->
+  <h2>4) CUBE での実装シナリオ</h2>
+
+  <h3>シナリオ 1: オンプレミス CUBE ↔ クラウド（SIP トランク）</h3>
+  <div class="card">
+    <p><strong>状況:</strong> オンプレミスの Cisco CUBE がファイアウォール/NAT 配下にあり、クラウド上の SIP プロバイダーと通信する場合</p>
+    <pre>【オンプレミス】          【インターネット】          【クラウド】
+CUBE (192.168.1.x)  ←NAT/FW→  STUNサーバー           SIP Provider
+   ↓                                                   
+STUN Request                                         
+   ↓                                    
+グローバルIP検出                                     
+   ↓                                    
+SDP に候補情報を含める                              
+   ↓                                    
+────────────────────────────────────────────→ SIP INVITE + SDP
+                                         ↓
+                                    ICE チェック実施
+                                    RTPパス確立</pre>
+    <p><strong>設定例:</strong></p>
+    <pre>voice service voip
+ stun
+  stun usage ice lite
+  stun server 61.193.45.211
+  stun server 202.156.78.100
+!
+sip-ua
+ credentials username user_cube password MySecurePass realm example.com
+ registrar ipv4:sip.provider.com:5060 expires 3600
+!</pre>
+  </div>
+
+  <h3>シナリオ 2: 複数拠点間の CUBE ↔ CUBE 通信（VPN な環境）</h3>
+  <div class="card">
+    <p><strong>状況:</strong> 本社と支社は VPN で接続されており、両拠点の CUBE が ICE Lite を有効化する場合</p>
+    <p><strong>設定（両拠点共通）:</strong></p>
+    <pre>voice service voip
+ stun
+  stun usage ice lite
+!
+</pre>
+    <p><strong>注:</strong> VPN だけで ICE Lite + ホスト候補でも十分です。STUN サーバーが外部にある場合、VPN の遅延やプロバイダー制限を避けるため、STUN サーバーは不要な場合が多いです。</p>
+  </div>
+
+  <!-- ==================== セクション 5 ==================== -->
+  <h2>5) 動作確認・トラブルシューティング</h2>
+
+  <h3>CUBE で STUN 動作確認</h3>
+  <pre>cube# show stun server
+STUN Server: 61.193.45.211 UDP PORT: 3478
+Default: No
+
+cube# show voice stun
+STUN Status: UP
+
+cube# debug stun
+STUN client initiated STUN request to server 61.193.45.211</pre>
+
+  <h3>よくある問題と対処</h3>
+  <div class="warning">
+    <strong>① STUN サーバーに到達できない</strong><br>
+    原因: ファイアウォールルール、DNS 解決不可<br>
+    対処: <code>ping</code>、<code>telnet [STUN-IP] 3478</code> で確認、UDP 通信許可確認
+  </div>
+
+  <div class="warning">
+    <strong>② SDP に候補アドレスが記載されない</strong><br>
+    原因: stun usage ice lite が OFF、または STUN サーバー返答なし<br>
+    対処: 設定確認、デバッグログ确认、STUN サーバー変更を試す
+  </div>
+
+  <div class="warning">
+    <strong>③ RTP が片方向のみ通信</strong><br>
+    原因: NAT の内側/外側のアドレスが SDP で異なる、相手が候補を認識していない<br>
+    対処: <code>show voice voip connection</code> で RTP 送受信統計確認、SDP 確認（debug ccsip all）
+  </div>
+
+  <h3>デバッグコマンド</h3>
+  <pre>! STUN デバッグ
+debug stun
+
+! SIP シグナリングとSDP確認
+debug ccsip all
+
+! VoIP 接続状態確認
+show voice voip connection
+show voice voip connection detailed
+
+! STUN サーバー接続状態
+show stun server</pre>
+
+  <!-- ==================== セクション 6 ==================== -->
+  <h2>6) ICE Lite 採用時の設計検討項目</h2>
+
+  <div class="card">
+    <h3>メリット</h3>
+    <ul>
+      <li><strong>シンプルな運用:</strong> CUBE 側は受動的で、追加の接続性チェック処理がない</li>
+      <li><strong>CPU/メモリ効率:</strong> 複数の ICE チェック候補をテストしないため負荷が低い</li>
+      <li><strong>設定が簡潔:</strong> STUN+ICE Lite の 1 行設定で実現</li>
+    </ul>
+
+    <h3>デメリット・制限</h3>
+    <ul>
+      <li><strong>呼出側の能力が前提:</strong> 呼出側が ICE Full または十分なサーバー・エンタープライズゲートウェイであることが前提</li>
+      <li><strong>複数 NAT 環境で限定:</strong> CUBE が二重 NAT の場合、相手が複数候補をテストする必要が増加</li>
+      <li><strong>TURN 未対応:</strong> ICE Lite では TURN（リレーサーバー）を使用しないため、NAT がコーン型でない場合はメディア疎通不可の場合がある</li>
+    </ul>
+  </div>
+
+  <h3>設計ガイドライン - STUN サーバー設定の必要性</h3>
+  <table>
+    <tr>
+      <th>環境</th>
+      <th>推奨構成</th>
+      <th>STUN サーバー設定</th>
+      <th>理由</th>
+    </tr>
+    <tr>
+      <td>社内 VPN（複数拠点）</td>
+      <td>ICE Lite のみ</td>
+      <td>不要</td>
+      <td>VPN で直接接続可能、ホスト候補で十分</td>
+    </tr>
+    <tr>
+      <td>エンタープライズ SIP Trunk</td>
+      <td>ICE Lite + STUN</td>
+      <td>推奨</td>
+      <td>プロバイダーが Full ICE 対応、グローバル候補で信頼性向上</td>
+    </tr>
+    <tr>
+      <td>インターネット経由の SIP 通信</td>
+      <td>ICE Lite + STUN</td>
+      <td>推奨</td>
+      <td>最適な接続経路を確保</td>
+    </tr>
+    <tr>
+      <td>End User Device → CUBE</td>
+      <td>ICE Lite + STUN + TURN</td>
+      <td>推奨（さらに TURN も）</td>
+      <td>多様な NAT 環境対応、コーン型 NAT 限定できない場合は TURN 必須</td>
+    </tr>
+  </table>
+
+  <!-- ==================== セクション 7 ==================== -->
+  <h2>7) 詳細設定例</h2>
+
+  <h3>例: フル Cisco CUBE 設定（SIP Trunk + STUN ICE Lite）</h3>
+  <pre>voice service voip
+ allow-connections sip to sip
+ stun
+  stun usage ice lite
+  stun server 61.193.45.211 port 3478
+  stun server 202.156.78.100 port 3478
+ voice-class codec 1
+  codec preference 1 g729
+  codec preference 2 g711alaw
+  codec preference 3 g711ulaw
+!
+voice class h323 1
+ call-info-url https://example.com/call-info
+!
+sip-ua
+ credentials username user_cube_trunk password C0pl3xP@ss1 realm trunk.provider.com
+ registrar ipv4:sip-trunk.provider.com:5060 expires 3600 options-ping
+ proxy ipv4:sip-trunk.provider.com:5060
+!
+voice class sip-options-keepalive 1
+ sip-options max-freq 600
+!
+ dial-peer voice 100 voip
+  description SIP-TRUNK to Cloud Provider
+  destination-pattern ........
+  session transport udp
+  codec g729
+  dtmf-relay sip-kpml
+  voice-class sip options-keepalive 1
+  session server ipv4:sip-trunk.provider.com:5060
+  media address 0.0.0.0
+!
+dial-peer voice 1 pots
+  description To-Local-PBX
+  destination-pattern 9T
+  port 0/1/0:15
+  codec g711ulaw
+!</pre>
+
+  <!-- ==================== セクション 8 ==================== -->
+  <h2>8) よくある質問（FAQ）</h2>
+
+  <div class="card">
+    <h3>Q1: ICE Lite を使わず、STUN だけではダメ？</h3>
+    <p><strong>A:</strong> STUN だけだと「自分のグローバルIP/ポートを知る」だけしかできません。ICE Lite（や ICE）は、実際に相手とのメディアパスが確立できるかをチェック・確認します。多くの場合 STUN 情報があれば通信成功しますが、複数 NAT や特殊なファイアウォール下では ICE による接続性チェックが有効です。</p>
+  </div>
+
+  <div class="card">
+    <h3>Q2: ICE Lite では TURN は使えない？</h3>
+    <p><strong>A:</strong> ICE Lite の定義上、TURN 候補は収集しません。TURN（中継サーバー）が必要な環境では、フル ICE または TURN を別途設定する必要があります。ただしエンタープライズ SIP では、相手方がコーン型 NAT で対応するため、通常は必要ありません。</p>
+  </div>
+
+  <div class="card">
+    <h3>Q3: 複数の STUN サーバーを設定した場合の動作は？</h3>
+    <p><strong>A:</strong> CUBE は複数 STUN サーバーを冗長構成として試します。最初のサーバーがタイムアウト/エラーの場合、次のサーバーにフェールオーバーします（ベンダー実装に依存）。</p>
+  </div>
+
+  <div class="card">
+    <h3>Q4: stun usage ice lite は最新 CUBE バージョンでも推奨される？</h3>
+    <p><strong>A:</strong> はい。ICE Lite は標準的な構成で、エンタープライズ環境では引き続き推奨されています。TURN が必要でない限り、シンプルで効果的です。</p>
+  </div>
+
+  <div class="card">
+    <h3>Q5: <code>stun server</code> を設定しないと動作しないのか？</h3>
+    <p><strong>A:</strong> いいえ。<code>stun usage ice lite</code> だけで ICE Lite は機能します。STUN サーバーが指定されない場合、CUBE はホスト候補（LAN IP/ポート）のみを SDP に記載し、呼出側がそのホスト候補への接続を試みます。</p>
+    <p><strong>使い分け:</strong></p>
+    <ul>
+      <li><strong>STUN サーバーなし:</strong> VPN 環境、信頼できる SIP Proxy、社内通信など → シンプル・低負荷</li>
+      <li><strong>STUN サーバーあり:</strong> インターネット経由の通信、SIP Trunk、複数の NAT 環境など → より多くの候補で接続確率向上</li>
+    </ul>
+    <p>Cisco ベストプラクティスでも、環境に応じて STUN サーバーの設定は選択肢として扱われます。</p>
+  </div>
+
+  <div class="card">
+    <h3>Q6: Cisco ベストプラクティスで STUN サーバーを設定しない理由は？</h3>
+    <p><strong>A:</strong> ベストプラクティスドキュメントが対象とする環境下では、以下の理由が考えられます：</p>
+    <ul>
+      <li><strong>VPN 環境が前提:</strong> 多くのエンタープライズ複数拠点通信は VPN 接続されており、STUN 不要</li>
+      <li><strong>信頼できる SIP Proxy:</strong> 社内 SIP Proxy 経由の通信では、CUBE はホスト候補で十分</li>
+      <li><strong>シンプルさの重視:</strong> ベストプラクティスは最小限の設定で実現可能な構成を示す</li>
+      <li><strong>環境依存性:</strong> STUN サーバーはインターネット環境に依存するため、ベストプラクティスでは「必須ではなく、必要に応じて追加」として扱う</li>
+    </ul>
+    <p>つまり、「STUN サーバーがなくても ICE Lite は動作する」ということがベストプラクティスの前提になっています。</p>
+  </div>
+
+  <!-- ==================== 参考資料 ==================== -->
+  <h2>参考資料・RFC</h2>
+  <ul>
+    <li><strong>RFC 5389</strong> - Session Traversal Utilities for NAT (STUN)</li>
+    <li><strong>RFC 5245</strong> - Interactive Connectivity Establishment (ICE)</li>
+    <li><strong>RFC 3489</strong> - STUN (旧版)</li>
+    <li><strong>Cisco CUBE 設定ガイド</strong> - voice service voip, stun 関連</li>
+    <li><strong>RFC 8445</strong> - Interactive Connectivity Establishment (ICE) - Updated version</li>
+  </ul>
+
+  <div class="note">
+    <strong>更新日:</strong> 2026年4月13日<br>
+    このドキュメントは、STUN・ICE Lite・Cisco CUBE の基本から実装まで、実務的なポイントをカバーしています。環境固有の要件が生じた場合は、Cisco TAC や STUN サーバープロバイダーへの相談をお勧めします。
+  </div>
+
+</main>
+</body>
+</html>
