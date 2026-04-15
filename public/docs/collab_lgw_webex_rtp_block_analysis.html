@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Webex Calling 無音事象の総合解析: LGW debug と CAP2.pcap</title>
+  <style>
+    body {
+      font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, Arial, sans-serif;
+      background: #ffffff;
+      color: #111827;
+      line-height: 1.75;
+      margin: 0;
+    }
+    main {
+      max-width: 1040px;
+      margin: 24px auto;
+      padding: 24px;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.06);
+      background: #fff;
+    }
+    h1, h2, h3 { color: #0b4a6f; }
+    h1 { margin: 0 0 10px; }
+    h2 { margin: 28px 0 10px; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; }
+    h3 { margin: 18px 0 8px; }
+    p { margin: 0 0 12px; }
+    ul { margin: 8px 0 10px 20px; }
+    li { margin: 6px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #f1f5f9; }
+    .summary {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 10px;
+      padding: 14px;
+      margin: 12px 0;
+    }
+    .note {
+      background: #e0f2fe;
+      border-left: 6px solid #0ea5e9;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 12px 0;
+    }
+    .warn {
+      background: #fff7ed;
+      border-left: 6px solid #f97316;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 12px 0;
+    }
+    pre {
+      background: #f8fafc;
+      color: #111827;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 12px;
+      overflow: auto;
+      font-size: 13px;
+    }
+    code {
+      background: #f1f5f9;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 1px 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      color: #111827;
+    }
+    .pill {
+      display: inline-block;
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Webex Calling 無音事象の総合解析</h1>
+  <p style="color:#6b7280; font-size:13px;">対象: 20260415_UC8300D.txt (debug ccsip messages / debug ccsip media / show voip rtp connections) + CAP2.pcap</p>
+
+  <div class="summary">
+    <strong>結論:</strong> 原因は <strong>Webex から LGW への戻り RTP (UDP) 不達</strong> です。<br>
+    LGW から Webex へは RTP を送出できていますが、逆方向が到達せず、受信タイムアウトで切断しています。
+  </div>
+
+  <h2>1. 解析対象と観測条件</h2>
+  <ul>
+    <li>通話経路: PSTN/ISDN 側端末 ↔ LGW (UC8300D) ↔ Webex Calling</li>
+    <li>LGW ログ: SIP シグナリング + メディア処理 + RTP接続テーブル</li>
+    <li>キャプチャ: <code>CAP2.pcap</code> (LGW 側採取)</li>
+  </ul>
+
+  <h2>2. 20260415_UC8300D.txt の主要事実</h2>
+
+  <h3>2.1 通話は張れており RTP セッション情報も生成される</h3>
+  <p><code>show voip rtp connections</code> ではアクティブ接続が 1 本表示され、以下の対向が見えています。</p>
+  <pre>No. CallId     dstCallId  LocalRTP RmtRTP   LocalIP          RemoteIP
+1   176965     176964     16634    24944    192.168.120.31   144.196.102.126</pre>
+
+  <h3>2.2 しかし通話終端時の RTP 受信統計が 0</h3>
+  <pre>Reason: Q.850;cause=102
+P-RTP-Stat: PS=1511,OS=317310,PR=0,OR=0,PL=0,JI=1,LA=-1,DU=30</pre>
+  <ul>
+    <li><code>PS</code>: 送信パケット数は増加</li>
+    <li><code>PR=0</code>: 受信パケットは 0</li>
+    <li><code>cause=102</code>: RTP受信タイマ満了での切断と整合</li>
+  </ul>
+
+  <h2>3. CAP2.pcap のフロー解析結果</h2>
+
+  <h3>3.1 方向別 RTP パケット数</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>方向</th>
+        <th>5タプル</th>
+        <th>パケット数</th>
+        <th>判定</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>LGW → Webex</td>
+        <td>192.168.120.31:16634 → 144.196.102.126:24944</td>
+        <td>1529</td>
+        <td>送信できている</td>
+      </tr>
+      <tr>
+        <td>Webex → LGW</td>
+        <td>144.196.102.126:24944 → 192.168.120.31:16634</td>
+        <td>0</td>
+        <td>戻りRTPが不達</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>3.2 CAP2 のプロトコル分布</h3>
+  <ul>
+    <li>UDP: 1563 パケット</li>
+    <li>TCP: 382 パケット</li>
+    <li>OSPF (proto 89): 12 パケット</li>
+  </ul>
+  <p>UDP の大半が <code>192.168.120.31:16634 → 144.196.102.126:24944</code> の片方向フローで、逆方向が存在しません。</p>
+
+  <h2>4. 相関分析 (ログ × pcap)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>観測</th>
+        <th>txtログ</th>
+        <th>pcap</th>
+        <th>解釈</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>通話確立</td>
+        <td>RTP接続エントリあり</td>
+        <td>RTP送信あり</td>
+        <td>シグナリング/送出開始は成立</td>
+      </tr>
+      <tr>
+        <td>無音</td>
+        <td>PR=0</td>
+        <td>戻りRTP 0</td>
+        <td>受信方向のみ欠落</td>
+      </tr>
+      <tr>
+        <td>切断</td>
+        <td>cause=102</td>
+        <td>片方向のまま</td>
+        <td>受信タイマ満了で自然切断</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="warn">
+    <strong>技術結論:</strong> 問題の本体は SRTP 交渉そのものではなく、<strong>Webex → LGW の戻り UDP/RTP 経路</strong>です。<br>
+    境界 FW/NAT の許可方向・タイムアウト・対称NAT挙動を最優先で見直してください。
+  </div>
+
+  <h2>5. 推奨対策</h2>
+  <h3>5.1 ファイアウォール許可</h3>
+  <ul>
+    <li>宛先: LGW メディアIP (192.168.120.31)</li>
+    <li>プロトコル: UDP</li>
+    <li>宛先ポート: 16384-32766</li>
+    <li>送信元: Webex Calling メディアレンジ (運用中リージョン全体)</li>
+  </ul>
+
+  <h3>5.2 NAT/セッション維持の確認</h3>
+  <ul>
+    <li>UDP セッションタイムアウトが過小でないこと (少なくとも 60 秒以上を推奨)</li>
+    <li>SIP ALG の不適切な書き換え無効化</li>
+    <li>ポリシーが片方向のみ許可になっていないこと</li>
+  </ul>
+
+  <h3>5.3 再試験時の確認コマンド</h3>
+  <pre>show voip rtp connections
+show call active voice compact
+(debug ccsip messages / media を同時採取)</pre>
+
+  <p>成功判定は次の 3 点です。</p>
+  <ol>
+    <li><code>P-RTP-Stat</code> の <code>PR &gt; 0</code></li>
+    <li><code>Reason: Q.850;cause=102</code> が出ない</li>
+    <li>pcap で Webex → LGW の RTP が継続到達する</li>
+  </ol>
+
+  <h2>6. 補足</h2>
+  <div class="note">
+    本解析では、LGW から送信された RTP が Webex 側へ到達している一方、逆方向のみ欠落しているため、
+    音声品質やコーデック不一致よりも、ネットワーク境界での受信方向制御を優先して対処するのが最短です。
+  </div>
+</main>
+</body>
+</html>
