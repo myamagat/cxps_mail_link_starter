@@ -160,7 +160,52 @@ P-RTP-Stat: PS=1511,OS=317310,PR=0,OR=0,PL=0,JI=1,LA=-1,DU=30</pre>
   </ul>
   <p>UDP の大半が <code>192.168.120.31:16634 → 144.196.102.126:24944</code> の片方向フローで、逆方向が存在しません。</p>
 
-  <h2>4. 相関分析 (ログ × pcap)</h2>
+  <h2>4. CAP2.pcap における STUN 処理の実体</h2>
+
+  <h3>4.1 検出された STUN メッセージ</h3>
+  <ul>
+    <li>STUN 総数: 36 パケット</li>
+    <li>メッセージ種別: すべて <code>0x0011</code> (Binding Indication)</li>
+    <li>Method bits: <code>0x0001</code> (Binding)</li>
+    <li>Message Length: すべて 108 byte</li>
+  </ul>
+
+  <h3>4.2 STUN の方向と本数</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>方向</th>
+        <th>5タプル</th>
+        <th>本数</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>LGW → Webex</td>
+        <td>192.168.120.31:16634 → 144.196.102.126:24944</td>
+        <td>18</td>
+      </tr>
+      <tr>
+        <td>LGW → Webex</td>
+        <td>192.168.120.31:16635 → 144.196.102.126:24945</td>
+        <td>18</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>4.3 この STUN が意味すること</h3>
+  <ul>
+    <li>本キャプチャの STUN は、RTPポート対に対する <strong>Binding Indication ベースの keepalive</strong> 動作です。</li>
+    <li>主目的は NAT/FW のピンホール維持と、ICE 系の到達性維持です。</li>
+    <li>Indication は応答必須ではないため、返信が見えないこと自体は STUN 異常とは断定できません。</li>
+  </ul>
+
+  <div class="note">
+    <strong>重要:</strong> STUN keepalive は正常に送出されていますが、Webex → LGW の戻りRTPは 0 のままです。<br>
+    したがって今回の無音事象は「STUN 不動作」ではなく、<strong>戻りRTP経路の遮断/不達</strong>が本体です。
+  </div>
+
+  <h2>5. 相関分析 (ログ × pcap)</h2>
   <table>
     <thead>
       <tr>
@@ -197,8 +242,8 @@ P-RTP-Stat: PS=1511,OS=317310,PR=0,OR=0,PL=0,JI=1,LA=-1,DU=30</pre>
     境界 FW/NAT の許可方向・タイムアウト・対称NAT挙動を最優先で見直してください。
   </div>
 
-  <h2>5. 推奨対策</h2>
-  <h3>5.1 ファイアウォール許可</h3>
+  <h2>6. 推奨対策</h2>
+  <h3>6.1 ファイアウォール許可</h3>
   <ul>
     <li>宛先: LGW メディアIP (192.168.120.31)</li>
     <li>プロトコル: UDP</li>
@@ -206,14 +251,14 @@ P-RTP-Stat: PS=1511,OS=317310,PR=0,OR=0,PL=0,JI=1,LA=-1,DU=30</pre>
     <li>送信元: Webex Calling メディアレンジ (運用中リージョン全体)</li>
   </ul>
 
-  <h3>5.2 NAT/セッション維持の確認</h3>
+  <h3>6.2 NAT/セッション維持の確認</h3>
   <ul>
     <li>UDP セッションタイムアウトが過小でないこと (少なくとも 60 秒以上を推奨)</li>
     <li>SIP ALG の不適切な書き換え無効化</li>
     <li>ポリシーが片方向のみ許可になっていないこと</li>
   </ul>
 
-  <h3>5.3 再試験時の確認コマンド</h3>
+  <h3>6.3 再試験時の確認コマンド</h3>
   <pre>show voip rtp connections
 show call active voice compact
 (debug ccsip messages / media を同時採取)</pre>
@@ -225,7 +270,7 @@ show call active voice compact
     <li>pcap で Webex → LGW の RTP が継続到達する</li>
   </ol>
 
-  <h2>6. 補足</h2>
+  <h2>7. 補足</h2>
   <div class="note">
     本解析では、LGW から送信された RTP が Webex 側へ到達している一方、逆方向のみ欠落しているため、
     音声品質やコーデック不一致よりも、ネットワーク境界での受信方向制御を優先して対処するのが最短です。
