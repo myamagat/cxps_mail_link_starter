@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>コールセンター コールフロー図（オンプレミス）</title>
+  <style>
+    body { font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, Arial, sans-serif; background:#ffffff; color:#111; line-height:1.75; margin:0; }
+    main { max-width: 860px; margin: 24px auto; padding: 24px; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); background:#fff; }
+    h1, h2, h3 { color:#0b4a6f; }
+    h1 { margin:0 0 4px; font-size:1.4rem; }
+    h2 { margin:28px 0 10px; font-size:1.1rem; }
+    p { margin:0 0 12px; }
+    .meta { font-size:13px; color:#6b7280; margin-bottom:20px; }
+    .note { background:#e0f2fe; border-left:6px solid #0ea5e9; padding:12px; border-radius:6px; margin:14px 0; }
+    code { background:#f3f4f6; padding:1px 5px; border-radius:4px; font-size:0.9em; }
+
+    /* ---- フロー図 ---- */
+    .flow-wrap { display:flex; flex-direction:column; align-items:center; gap:0; margin:20px 0; }
+
+    .flow-node {
+      position: relative;
+      width: 560px;
+      max-width: 100%;
+      background: #f8fafc;
+      border: 1.5px solid #94a3b8;
+      border-radius: 10px;
+      padding: 12px 16px 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.07);
+    }
+    .flow-node.caller   { background:#eff6ff; border-color:#3b82f6; }
+    .flow-node.gw       { background:#f0fdf4; border-color:#22c55e; }
+    .flow-node.cucm     { background:#fefce8; border-color:#eab308; }
+    .flow-node.uccx     { background:#fdf4ff; border-color:#a855f7; }
+    .flow-node.queue    { background:#fff7ed; border-color:#f97316; }
+    .flow-node.agent    { background:#f0f9ff; border-color:#0ea5e9; }
+
+    .node-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      color: #6b7280;
+    }
+    .flow-node.caller .node-label   { color:#3b82f6; }
+    .flow-node.gw .node-label       { color:#16a34a; }
+    .flow-node.cucm .node-label     { color:#ca8a04; }
+    .flow-node.uccx .node-label     { color:#9333ea; }
+    .flow-node.queue .node-label    { color:#ea580c; }
+    .flow-node.agent .node-label    { color:#0284c7; }
+
+    .node-title { font-size:15px; font-weight:700; margin-bottom:2px; }
+    .node-detail { font-size:13px; color:#374151; margin-top:4px; }
+    .node-detail code { font-size:12px; }
+
+    .arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2px 0;
+    }
+    .arrow-line { width:2px; height:22px; background:#94a3b8; }
+    .arrow-head {
+      width:0; height:0;
+      border-left:7px solid transparent;
+      border-right:7px solid transparent;
+      border-top:10px solid #94a3b8;
+    }
+    .arrow-label {
+      font-size: 11.5px;
+      color: #64748b;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: 1px 8px;
+      margin: 3px 0;
+      white-space: nowrap;
+    }
+
+    .step-num {
+      display:inline-block;
+      background:#0b4a6f;
+      color:#fff;
+      font-size:11px;
+      font-weight:700;
+      border-radius:999px;
+      width:20px; height:20px;
+      text-align:center;
+      line-height:20px;
+      margin-right:6px;
+      vertical-align:middle;
+      flex-shrink:0;
+    }
+
+    /* テーブル */
+    table { width:100%; border-collapse:collapse; margin:12px 0; font-size:13px; }
+    th, td { border:1px solid #e5e7eb; padding:8px 10px; text-align:left; vertical-align:top; }
+    th { background:#f1f5f9; }
+
+    @media(max-width:620px){
+      .flow-node { width:100%; }
+      .arrow-label { font-size:10.5px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>コールセンター コールフロー図（オンプレミス）</h1>
+  <p class="meta">更新日: 2026-04-16 &nbsp;|&nbsp; 対象番号: 03-5771-2388</p>
+
+  <div class="note">
+    本ページは、オンプレミスコールセンター環境における着信コールフローを可視化したものです。<br>
+    構成コンポーネント: <strong>PSTN → Voice GW → CUCM → UCCX（CCX）→ エージェント</strong>
+  </div>
+
+  <h2>コールフロー図</h2>
+
+  <div class="flow-wrap">
+
+    <!-- Step 1: ユーザ / PSTN -->
+    <div class="flow-node caller">
+      <div class="node-label">発信者 / PSTN</div>
+      <div class="node-title"><span class="step-num">1</span>ユーザが代表番号へ発信</div>
+      <div class="node-detail">発信番号宛先: <code>03-5771-2388</code></div>
+    </div>
+
+    <div class="arrow">
+      <div class="arrow-line"></div>
+      <div class="arrow-label">PSTN 着信（ISDN/SIP トランク）</div>
+      <div class="arrow-line"></div>
+      <div class="arrow-head"></div>
+    </div>
+
+    <!-- Step 2: Voice GW -->
+    <div class="flow-node gw">
+      <div class="node-label">Voice Gateway</div>
+      <div class="node-title"><span class="step-num">2</span>dial-peer voice 211 pots で着信</div>
+      <div class="node-detail">
+        GW アドレス: <code>192.168.120.31</code><br>
+        マッチ条件: <code>incoming called-number ^57712388$</code>
+      </div>
+    </div>
+
+    <div class="arrow">
+      <div class="arrow-line"></div>
+      <div class="arrow-label">番号変換: <code>rule 1 /^57712388$/ /8991901/</code></div>
+      <div class="arrow-line"></div>
+      <div class="arrow-head"></div>
+    </div>
+
+    <!-- Step 3+4: CUCM -->
+    <div class="flow-node cucm">
+      <div class="node-label">CUCM</div>
+      <div class="node-title"><span class="step-num">3</span><span class="step-num" style="background:#b45309;">4</span>CTI Route Point へルーティング</div>
+      <div class="node-detail">
+        DNIS（変換後）: <code>8991901</code><br>
+        CTI Route Point: <code>8991901</code> に着信
+      </div>
+    </div>
+
+    <div class="arrow">
+      <div class="arrow-line"></div>
+      <div class="arrow-label">CTI イベント / Trigger 起動</div>
+      <div class="arrow-line"></div>
+      <div class="arrow-head"></div>
+    </div>
+
+    <!-- Step 5+6: UCCX -->
+    <div class="flow-node uccx">
+      <div class="node-label">UCCX（CCX）</div>
+      <div class="node-title"><span class="step-num">5</span><span class="step-num" style="background:#7e22ce;">6</span>アプリケーション起動 → ウェルカム案内</div>
+      <div class="node-detail">
+        Trigger: <code>8991901</code><br>
+        アプリケーション: <code>M-inbound</code><br>
+        ウェルカムプロンプト再生
+      </div>
+    </div>
+
+    <div class="arrow">
+      <div class="arrow-line"></div>
+      <div class="arrow-label">キューイング</div>
+      <div class="arrow-line"></div>
+      <div class="arrow-head"></div>
+    </div>
+
+    <!-- Step 7: Queue -->
+    <div class="flow-node queue">
+      <div class="node-label">キュー / CSQ</div>
+      <div class="node-title"><span class="step-num">7</span>TOKYO キューで待機</div>
+      <div class="node-detail">
+        CSQ 名: <code>TOKYO</code><br>
+        必要スキル: <code>Skill_TOKYO</code><br>
+        待機中は「おまちください」プロンプトをループ再生
+      </div>
+    </div>
+
+    <div class="arrow">
+      <div class="arrow-line"></div>
+      <div class="arrow-label">エージェント対応可能 → Select Resource</div>
+      <div class="arrow-line"></div>
+      <div class="arrow-head"></div>
+    </div>
+
+    <!-- Step 8: Agent -->
+    <div class="flow-node agent">
+      <div class="node-label">エージェント</div>
+      <div class="node-title"><span class="step-num">8</span>エージェントへ接続</div>
+      <div class="node-detail">
+        スキル <code>Skill_TOKYO</code> 保有エージェントに転送<br>
+        通話開始
+      </div>
+    </div>
+
+  </div><!-- /.flow-wrap -->
+
+  <h2>構成要素まとめ</h2>
+  <table>
+    <thead>
+      <tr><th>コンポーネント</th><th>値 / 設定</th><th>役割</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>代表番号</td><td><code>03-5771-2388</code></td><td>ユーザが発信する公衆番号</td></tr>
+      <tr><td>Voice Gateway</td><td><code>192.168.120.31</code></td><td>PSTN とボイスネットワークの境界</td></tr>
+      <tr><td>dial-peer</td><td><code>voice 211 pots</code></td><td>着信マッチ（<code>incoming called-number ^57712388$</code>）</td></tr>
+      <tr><td>番号変換ルール</td><td><code>rule 1 /^57712388$/ /8991901/</code></td><td>PSTN 番号 → 内線番号へ変換</td></tr>
+      <tr><td>CUCM CTI Route Point</td><td><code>8991901</code></td><td>UCCX へのトリガポイント</td></tr>
+      <tr><td>UCCX Trigger</td><td><code>8991901</code></td><td>アプリ <code>M-inbound</code> を起動</td></tr>
+      <tr><td>CSQ（キュー）</td><td><code>TOKYO</code></td><td>コール待機キュー</td></tr>
+      <tr><td>スキル</td><td><code>Skill_TOKYO</code></td><td>エージェント選択条件</td></tr>
+    </tbody>
+  </table>
+
+</main>
+</body>
+</html>
