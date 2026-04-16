@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SD-WAN と Cisco Secure Access（CSA）入門</title>
+  <style>
+    body { font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, Arial, sans-serif; background:#ffffff; color:#111; line-height:1.75; margin:0; }
+    main { max-width: 960px; margin: 24px auto; padding: 24px; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); background:#fff; }
+    h1, h2, h3 { color:#0b4a6f; }
+    h1 { margin:0 0 6px; }
+    h2 { margin:28px 0 8px; border-bottom:2px solid #e5e7eb; padding-bottom:4px; }
+    h3 { margin:18px 0 6px; }
+    p { margin:0 0 12px; }
+    ul, ol { margin:0 0 12px 22px; }
+    table { width:100%; border-collapse:collapse; margin:12px 0; font-size:14px; }
+    th, td { border:1px solid #e5e7eb; padding:8px 10px; text-align:left; vertical-align:top; }
+    th { background:#f1f5f9; }
+    code { background:#f3f4f6; padding:1px 5px; border-radius:4px; font-size:0.9em; }
+    .meta  { font-size:13px; color:#6b7280; margin-bottom:20px; }
+    .note  { background:#e0f2fe; border-left:6px solid #0ea5e9; padding:12px; border-radius:6px; margin:14px 0; }
+    .warn  { background:#fff7ed; border-left:6px solid #f59e0b; padding:12px; border-radius:6px; margin:14px 0; }
+    .card  { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 16px; margin:12px 0; }
+    .badge { display:inline-block; font-size:11px; font-weight:700; padding:2px 10px; border-radius:999px; margin-right:6px; }
+    .badge-blue   { background:#dbeafe; color:#1d4ed8; }
+    .badge-green  { background:#dcfce7; color:#15803d; }
+    .badge-purple { background:#f3e8ff; color:#7e22ce; }
+
+    /* 比較図 */
+    .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; }
+    .compare-card { border:1.5px solid #e2e8f0; border-radius:10px; padding:14px; }
+    .compare-card h4 { margin:0 0 8px; font-size:15px; color:#0b4a6f; }
+
+    /* アーキ図（テキストベース） */
+    .arch-box {
+      background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px;
+      padding:16px 20px; font-family:Consolas, Menlo, monospace; font-size:13px;
+      line-height:1.9; overflow:auto; margin:14px 0; color:#1e293b;
+    }
+
+    /* CSA アーキテクチャ図 */
+    .csa-diagram { display:flex; flex-direction:column; align-items:center; gap:0; margin:20px 0; }
+    .csa-row { display:flex; justify-content:center; gap:12px; width:100%; }
+    .csa-client-box {
+      flex:1; max-width:200px; background:#eff6ff; border:1.5px solid #3b82f6;
+      border-radius:10px; padding:10px 12px; text-align:center; font-size:13px;
+    }
+    .csa-client-box .icon { font-size:22px; margin-bottom:4px; }
+    .csa-client-box .label { font-weight:700; font-size:13px; color:#1d4ed8; }
+    .csa-client-box .sub { font-size:11px; color:#3b82f6; margin-top:2px; }
+    .csa-arrow-row { display:flex; justify-content:center; align-items:flex-start; gap:12px; width:100%; padding:4px 0; }
+    .csa-arrow-col { display:flex; flex-direction:column; align-items:center; flex:1; max-width:200px; }
+    .csa-arrow-label { font-size:10.5px; color:#64748b; background:#fff; border:1px solid #e2e8f0; border-radius:4px; padding:1px 7px; white-space:nowrap; margin:2px 0; }
+    .csa-arr-line { width:2px; height:16px; background:#94a3b8; }
+    .csa-arr-head { width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-top:9px solid #94a3b8; }
+    .csa-cloud {
+      width:100%; max-width:560px; background:#fdf4ff; border:2px solid #a855f7;
+      border-radius:14px; padding:14px 16px; text-align:center;
+    }
+    .csa-cloud-title { font-weight:700; font-size:15px; color:#7e22ce; margin-bottom:8px; }
+    .csa-cloud-sub { font-size:12px; color:#9333ea; margin-bottom:10px; }
+    .csa-features { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .csa-feature {
+      background:#fff; border:1px solid #d8b4fe; border-radius:8px;
+      padding:7px 10px; font-size:12px; text-align:left; color:#4c1d95;
+    }
+    .csa-feature .f-title { font-weight:700; color:#7e22ce; margin-bottom:2px; }
+    .csa-dest-row { display:flex; justify-content:center; gap:10px; margin-top:4px; }
+    .csa-dest {
+      background:#f0fdf4; border:1.5px solid #22c55e; border-radius:8px;
+      padding:8px 14px; font-size:12px; text-align:center; color:#15803d; font-weight:600;
+    }
+    @media(max-width:600px){
+      .csa-features { grid-template-columns:1fr; }
+      .csa-dest-row { flex-direction:column; align-items:center; }
+    }
+
+    /* SASE 図 */
+    .sase-diagram { display:flex; flex-direction:column; align-items:center; gap:0; margin:20px 0; }
+    .sase-src-row { display:flex; justify-content:center; gap:14px; width:100%; }
+    .sase-src-box {
+      flex:1; max-width:200px; border-radius:10px; padding:10px 12px;
+      text-align:center; font-size:13px; border:1.5px solid;
+    }
+    .sase-src-box.branch  { background:#eff6ff; border-color:#3b82f6; }
+    .sase-src-box.remote  { background:#f0fdf4; border-color:#22c55e; }
+    .sase-src-box .s-icon  { font-size:22px; margin-bottom:4px; }
+    .sase-src-box .s-label { font-weight:700; font-size:13px; }
+    .sase-src-box.branch .s-label { color:#1d4ed8; }
+    .sase-src-box.remote .s-label { color:#15803d; }
+    .sase-src-box .s-sub  { font-size:11px; margin-top:2px; color:#64748b; }
+    .sase-mid-arrow { display:flex; justify-content:center; align-items:flex-start; gap:14px; width:100%; padding:2px 0; }
+    .sase-mid-col { display:flex; flex-direction:column; align-items:center; flex:1; max-width:200px; }
+    .sase-mid-line { width:2px; height:16px; background:#94a3b8; }
+    .sase-mid-head { width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-top:9px solid #94a3b8; }
+    .sase-mid-label { font-size:10.5px; color:#64748b; background:#fff; border:1px solid #e2e8f0; border-radius:4px; padding:1px 7px; white-space:nowrap; margin:2px 0; }
+    .sase-cloud {
+      width:100%; max-width:580px; border-radius:14px; padding:14px 18px;
+      border:2px solid #a855f7; background:#fdf4ff;
+    }
+    .sase-cloud-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .sase-cloud-title { font-weight:700; font-size:15px; color:#7e22ce; }
+    .sase-cloud-pills { display:flex; flex-wrap:wrap; gap:7px; }
+    .sase-pill {
+      background:#fff; border:1px solid #d8b4fe; border-radius:999px;
+      padding:4px 14px; font-size:12px; color:#6d28d9; font-weight:600;
+    }
+    .sase-down-arrow { display:flex; flex-direction:column; align-items:center; padding:2px 0; }
+    .sase-down-label { font-size:10.5px; color:#64748b; background:#fff; border:1px solid #e2e8f0; border-radius:4px; padding:1px 7px; margin:2px 0; }
+    .sase-dest-row { display:flex; justify-content:center; gap:10px; margin-top:2px; }
+    .sase-dest {
+      border-radius:8px; padding:9px 16px; font-size:12px;
+      text-align:center; font-weight:600; border:1.5px solid;
+    }
+    .sase-dest.internet { background:#fefce8; border-color:#eab308; color:#854d0e; }
+    .sase-dest.saas     { background:#eff6ff; border-color:#3b82f6; color:#1d4ed8; }
+    .sase-dest.app      { background:#f0fdf4; border-color:#22c55e; color:#15803d; }
+    @media(max-width:600px){
+      .sase-src-row { flex-direction:column; align-items:center; }
+      .sase-mid-arrow { flex-direction:column; align-items:center; }
+      .sase-dest-row { flex-direction:column; align-items:center; }
+    }
+
+    @media(max-width:620px){
+      .compare-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>SD-WAN と Cisco Secure Access（CSA）入門</h1>
+  <p class="meta">更新日: 2026-04-16</p>
+
+  <div class="note">
+    <strong>このページのゴール:</strong><br>
+    従来 WAN と SD-WAN の違い、Cisco Secure Access（旧 Umbrella SIG）の役割、
+    そして両者を組み合わせたゼロトラスト WAN の全体像を理解する。
+  </div>
+
+  <!-- ===================== SD-WAN ===================== -->
+  <h2>1. SD-WAN とは</h2>
+
+  <h3>1-1. 従来 WAN との比較</h3>
+  <div class="compare-grid">
+    <div class="compare-card">
+      <h4>🏛️ 従来 WAN（MPLS 中心）</h4>
+      <ul>
+        <li>専用線・MPLS で拠点間を接続</li>
+        <li>本社データセンター（DC）を経由してインターネットへ</li>
+        <li>帯域追加はプロバイダ工事が必要</li>
+        <li>クラウド SaaS が増えると <strong>DC がボトルネック</strong>に</li>
+      </ul>
+    </div>
+    <div class="compare-card">
+      <h4>🚀 SD-WAN</h4>
+      <ul>
+        <li>インターネット回線（ブロードバンド・LTE・5G など）を <strong>複数束ねる</strong></li>
+        <li>回線品質に応じてアプリごとにパス選択（アプリ認識ルーティング）</li>
+        <li>ソフトウェア設定だけで帯域・ポリシー変更が可能</li>
+        <li>SaaS への通信はローカルブレイクアウト（拠点から直接インターネット）</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>1-2. SD-WAN の主要コンポーネント（Cisco Catalyst SD-WAN）</h3>
+  <table>
+    <thead>
+      <tr><th>コンポーネント</th><th>旧称</th><th>役割</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>SD-WAN Manager</strong></td><td>vManage</td><td>Web GUI による一元管理・設定配布・可視化</td></tr>
+      <tr><td><strong>SD-WAN Controller</strong></td><td>vSmart</td><td>OMP（Overlay Management Protocol）でルーティングポリシーを制御</td></tr>
+      <tr><td><strong>SD-WAN Validator</strong></td><td>vBond</td><td>拠点エッジデバイスの認証・オーケストレーション</td></tr>
+      <tr><td><strong>WAN Edge</strong></td><td>vEdge / cEdge</td><td>拠点に設置する物理 or 仮想ルータ（IOS-XE ベース）</td></tr>
+    </tbody>
+  </table>
+
+  <h3>1-3. SD-WAN のデータプレーン概要</h3>
+  <div class="arch-box">
+[拠点 A]                    [拠点 B]
+WAN Edge ─── IPsec Tunnel (BFD で死活監視) ─── WAN Edge
+    │                                                │
+  ISP-1 (best path → SaaS)               ISP-1 / MPLS
+  ISP-2 (fallback)                        ISP-2
+
+アプリポリシー例:
+  Teams / Webex → ISP-1 優先（低遅延）
+  バックアップ  → ISP-2 / MPLS
+  未分類トラフィック → ロードバランス
+  </div>
+
+  <ul>
+    <li><strong>BFD（Bidirectional Forwarding Detection）</strong> で各トンネルの遅延・ジッタ・パケットロスをリアルタイム計測し、SLA を満たす回線へ自動切替。</li>
+    <li><strong>DPI（Deep Packet Inspection）</strong> によってアプリを識別し、アプリごとに優先パスを選択。</li>
+    <li>設定はすべて <strong>SD-WAN Manager（vManage）</strong> からテンプレート配布。CLI 直接投入は不要。</li>
+  </ul>
+
+  <!-- ===================== CSA ===================== -->
+  <h2>2. Cisco Secure Access（CSA）とは</h2>
+
+  <div class="card">
+    <span class="badge badge-purple">旧称: Cisco Umbrella SIG（Secure Internet Gateway）</span>
+    <span class="badge badge-blue">SASE 構成要素</span><br><br>
+    Cisco Secure Access は、クラウド型のセキュリティサービスプラットフォームです。
+    拠点・ユーザがどこにいても、すべてのインターネット通信を <strong>クラウド PoP（Point of Presence）</strong> 経由に集約し、多層防御を提供します。
+  </div>
+
+  <h3>2-1. 主なセキュリティ機能</h3>
+  <table>
+    <thead>
+      <tr><th>機能</th><th>概要</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>DNS セキュリティ</strong></td><td>悪意ある FQDN を DNS 解決の時点でブロック（C2 通信・フィッシング対策）</td></tr>
+      <tr><td><strong>SWG（Secure Web Gateway）</strong></td><td>HTTP/HTTPS プロキシ。URLフィルタリング・SSL インスペクション・マルウェア検査</td></tr>
+      <tr><td><strong>CASB</strong></td><td>SaaS（Office 365・Box など）の利用状況可視化とアクセス制御</td></tr>
+      <tr><td><strong>ZTNA（Zero Trust Network Access）</strong></td><td>社内アプリへのアクセスをユーザ/デバイス/コンテキストで制御（VPN 代替）</td></tr>
+      <tr><td><strong>FWaaS（Firewall as a Service）</strong></td><td>クラウドで動作するステートフル L3/L4/L7 ファイアウォール</td></tr>
+      <tr><td><strong>Threat Intelligence</strong></td><td>Cisco Talos の脅威インテリジェンスと統合した脅威検知</td></tr>
+    </tbody>
+  </table>
+
+  <h3>2-2. CSA のアーキテクチャ</h3>
+
+  <div class="csa-diagram">
+
+    <!-- 接続元 -->
+    <div class="csa-row">
+      <div class="csa-client-box">
+        <div class="icon">🏢</div>
+        <div class="label">拠点 WAN Edge</div>
+        <div class="sub">Cisco Catalyst SD-WAN</div>
+      </div>
+      <div class="csa-client-box">
+        <div class="icon">💻</div>
+        <div class="label">端末 / リモートユーザ</div>
+        <div class="sub">Cisco Secure Client</div>
+      </div>
+      <div class="csa-client-box">
+        <div class="icon">🌐</div>
+        <div class="label">DNS クエリ</div>
+        <div class="sub">すべてのデバイス</div>
+      </div>
+    </div>
+
+    <!-- 矢印 -->
+    <div class="csa-arrow-row">
+      <div class="csa-arrow-col">
+        <div class="csa-arr-line"></div>
+        <div class="csa-arrow-label">IPsec / GRE</div>
+        <div class="csa-arr-line"></div>
+        <div class="csa-arr-head"></div>
+      </div>
+      <div class="csa-arrow-col">
+        <div class="csa-arr-line"></div>
+        <div class="csa-arrow-label">ZTNA / SWG</div>
+        <div class="csa-arr-line"></div>
+        <div class="csa-arr-head"></div>
+      </div>
+      <div class="csa-arrow-col">
+        <div class="csa-arr-line"></div>
+        <div class="csa-arrow-label">DNS 53/853</div>
+        <div class="csa-arr-line"></div>
+        <div class="csa-arr-head"></div>
+      </div>
+    </div>
+
+    <!-- CSA クラウド -->
+    <div class="csa-cloud">
+      <div class="csa-cloud-title">☁️ Cisco Secure Access</div>
+      <div class="csa-cloud-sub">クラウド PoP（世界各地に分散配置）</div>
+      <div class="csa-features">
+        <div class="csa-feature">
+          <div class="f-title">🔍 DNS セキュリティ</div>
+          悪意ある FQDN を DNS 解決時点でブロック
+        </div>
+        <div class="csa-feature">
+          <div class="f-title">🔒 SWG / SSL 検査</div>
+          HTTP/HTTPS を復号・検査・URLフィルタリング
+        </div>
+        <div class="csa-feature">
+          <div class="f-title">🛡️ FWaaS</div>
+          クラウド動作のステートフル L3〜L7 FW
+        </div>
+        <div class="csa-feature">
+          <div class="f-title">🗝️ ZTNA</div>
+          ユーザ / デバイス / コンテキストでアプリアクセスを制御
+        </div>
+        <div class="csa-feature">
+          <div class="f-title">📊 CASB</div>
+          SaaS 利用状況の可視化とアクセス制御
+        </div>
+        <div class="csa-feature">
+          <div class="f-title">⚡ Talos 脅威 Intel</div>
+          Cisco Talos と連携したリアルタイム脅威検知
+        </div>
+      </div>
+    </div>
+
+    <!-- 下矢印 -->
+    <div class="csa-arrow-col" style="max-width:100%;">
+      <div class="csa-arr-line"></div>
+      <div class="csa-arrow-label">セキュリティ検査済みトラフィック</div>
+      <div class="csa-arr-line"></div>
+      <div class="csa-arr-head"></div>
+    </div>
+
+    <!-- 宛先 -->
+    <div class="csa-dest-row">
+      <div class="csa-dest">🌍 インターネット</div>
+      <div class="csa-dest">☁️ SaaS<br><small>Microsoft 365 / Box など</small></div>
+      <div class="csa-dest">🏠 社内アプリ<br><small>ZTNA 経由</small></div>
+    </div>
+
+  </div>
+
+  <h3>2-3. 従来 VPN との違い</h3>
+  <div class="compare-grid">
+    <div class="compare-card">
+      <h4>🔒 従来 VPN</h4>
+      <ul>
+        <li>拠点/端末 → VPN 集約装置（本社 DC）→ インターネット</li>
+        <li>DC がボトルネック・遅延増大</li>
+        <li>「社内ネットワーク内は信頼する」前提</li>
+        <li>VPN 認証のみ。端末の健全性は問わない</li>
+      </ul>
+    </div>
+    <div class="compare-card">
+      <h4>🛡️ Cisco Secure Access（ZTNA）</h4>
+      <ul>
+        <li>端末 → 最寄りクラウド PoP → アプリ（直接）</li>
+        <li>遅延最小・DC 経由不要</li>
+        <li>「すべてを疑う」ゼロトラスト前提</li>
+        <li>ユーザ・デバイス姿勢・場所・時間でアクセス判断</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===================== 組み合わせ ===================== -->
+  <h2>3. SD-WAN + CSA の組み合わせ（SASE）</h2>
+
+  <div class="note">
+    <strong>SASE（Secure Access Service Edge）</strong> = SD-WAN（ネットワーク）＋ クラウドセキュリティ（CSA）を統合したアーキテクチャ。
+    Cisco では <strong>Catalyst SD-WAN + Cisco Secure Access</strong> の組み合わせがこれに相当します。
+  </div>
+
+  <div class="sase-diagram">
+
+    <!-- 接続元 -->
+    <div class="sase-src-row">
+      <div class="sase-src-box branch">
+        <div class="s-icon">🏢</div>
+        <div class="s-label">本社 / 拠点</div>
+        <div class="s-sub">Catalyst SD-WAN WAN Edge</div>
+      </div>
+      <div class="sase-src-box remote">
+        <div class="s-icon">🏠</div>
+        <div class="s-label">リモートユーザ</div>
+        <div class="s-sub">Cisco Secure Client（端末）</div>
+      </div>
+    </div>
+
+    <!-- 上向き矢印 -->
+    <div class="sase-mid-arrow">
+      <div class="sase-mid-col">
+        <div class="sase-mid-line"></div>
+        <div class="sase-mid-label">IPsec トンネル</div>
+        <div class="sase-mid-line"></div>
+        <div class="sase-mid-head"></div>
+      </div>
+      <div class="sase-mid-col">
+        <div class="sase-mid-line"></div>
+        <div class="sase-mid-label">ZTNA / SWG</div>
+        <div class="sase-mid-line"></div>
+        <div class="sase-mid-head"></div>
+      </div>
+    </div>
+
+    <!-- CSA クラウド -->
+    <div class="sase-cloud">
+      <div class="sase-cloud-header">
+        <span style="font-size:22px;">☁️</span>
+        <span class="sase-cloud-title">Cisco Secure Access &nbsp;<small style="font-size:12px;color:#9333ea;font-weight:400;">（クラウドセキュリティ境界）</small></span>
+      </div>
+      <div class="sase-cloud-pills">
+        <span class="sase-pill">🔍 DNS Security</span>
+        <span class="sase-pill">🔒 SWG / SSL 検査</span>
+        <span class="sase-pill">🛡️ FWaaS</span>
+        <span class="sase-pill">🗝️ ZTNA</span>
+        <span class="sase-pill">📊 CASB</span>
+        <span class="sase-pill">⚡ Talos 脅威 Intel</span>
+      </div>
+    </div>
+
+    <!-- 下矢印 -->
+    <div class="sase-down-arrow">
+      <div class="sase-mid-line"></div>
+      <div class="sase-down-label">セキュリティ検査済みトラフィック</div>
+      <div class="sase-mid-line"></div>
+      <div class="sase-mid-head"></div>
+    </div>
+
+    <!-- 宛先 -->
+    <div class="sase-dest-row">
+      <div class="sase-dest internet">🌍 インターネット</div>
+      <div class="sase-dest saas">☁️ SaaS<br><small>Microsoft 365 / Box など</small></div>
+      <div class="sase-dest app">🏠 社内アプリ<br><small>ZTNA 経由</small></div>
+    </div>
+
+  </div>
+
+  <h3>メリット</h3>
+  <ul>
+    <li><strong>一貫したポリシー:</strong> 拠点・在宅・外出中のどこからでも同じセキュリティポリシーを適用。</li>
+    <li><strong>可視化の統合:</strong> SD-WAN Manager と CSA ダッシュボードで WAN 品質・セキュリティイベントを一元確認。</li>
+    <li><strong>スケーラビリティ:</strong> 拠点追加はエッジデバイス設置＋テンプレート適用のみ。DC に機器追加不要。</li>
+    <li><strong>コスト最適化:</strong> MPLS を低コストのブロードバンドへ移行しつつ、セキュリティはクラウドで担保。</li>
+  </ul>
+
+  <h2>4. キーワードまとめ</h2>
+  <table>
+    <thead>
+      <tr><th>用語</th><th>意味</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>SD-WAN</code></td><td>ソフトウェア定義 WAN。複数回線をインテリジェントに使い分ける</td></tr>
+      <tr><td><code>OMP</code></td><td>Overlay Management Protocol。SD-WAN コントローラがルーティング情報を配布するプロトコル</td></tr>
+      <tr><td><code>BFD</code></td><td>トンネルの遅延・ロスをリアルタイム計測。SLA 違反時に自動パス切替</td></tr>
+      <tr><td><code>ローカルブレイクアウト</code></td><td>SaaS 向けトラフィックを DC 経由せず拠点から直接インターネットへ出す</td></tr>
+      <tr><td><code>SWG</code></td><td>Secure Web Gateway。HTTP/HTTPS を検査するクラウドプロキシ</td></tr>
+      <tr><td><code>ZTNA</code></td><td>Zero Trust Network Access。VPN に代わるアプリ単位のアクセス制御</td></tr>
+      <tr><td><code>CASB</code></td><td>Cloud Access Security Broker。SaaS の利用を可視化・制御</td></tr>
+      <tr><td><code>SASE</code></td><td>SD-WAN＋クラウドセキュリティを統合したアーキテクチャ</td></tr>
+      <tr><td><code>Cisco Talos</code></td><td>Cisco の脅威インテリジェンスチーム。CSA と統合</td></tr>
+    </tbody>
+  </table>
+
+</main>
+</body>
+</html>
