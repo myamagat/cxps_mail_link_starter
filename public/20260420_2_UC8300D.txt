@@ -1,0 +1,1088 @@
+sh
+UC8300D#show deb
+UC8300D#show debugging 
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:05.988 JST Mon Apr 20 2026
+
+IOSXE Conditional Debug Configs:
+
+Conditional Debug Global State: Stop
+
+
+IOSXE Packet Tracing Configs: 
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:05.990 JST Mon Apr 20 2026
+
+
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.000 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.008 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.016 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.024 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.033 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.041 JST Mon Apr 20 2026
+
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.049 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.058 JST Mon Apr 20 2026
+
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.066 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.074 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.082 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.091 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.104 JST Mon Apr 20 2026
+
+Packet Infra debugs:
+
+Ip Address                                               Port
+------------------------------------------------------|----------
+
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.114 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.122 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.130 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.138 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.147 JST Mon Apr 20 2026
+
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.155 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.163 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.179 JST Mon Apr 20 2026
+
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.188 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.196 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.204 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.216 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.224 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:06.232 JST Mon Apr 20 2026
+ 
+ 
+
+
+
+
+
+UC8300D#deb
+UC8300D#debug ccsip
+UC8300D#debug ccsip mess
+UC8300D#debug ccsip messages 
+SIP Call messages tracing is enabled
+UC8300D#deb
+Apr 20 18:55:18.834 JST: //-1/xxxxxxxxxxxx/SIP/Msg/ccsipDisplayMsg:
+Received: 
+SIP/2.0 401 Unauthorized
+Via:SIP/2.0/TLS 192.168.120.31:5061;received=64.104.56.33;branch=z9hG4bKFCD845D
+From:<sip:^0*@59685258.jp10.bcld.webex.com;otg=lgw_tky2074578062_lgu>;tag=63427EFB-238C
+To:<sip:^0*@59685258.jp10.bcld.webex.com>;tag=1423414023-1776678918851
+Call-ID:F4DDC4DC-2D7311F1-A565DFF0-D3016C07
+CSeq:8859 REGISTER
+Session-ID:3ff2f02f008040f6a2b5bd5ac8069599;remote=8f1abe9600804ef7b8dbc948a3476099
+Content-Length:0
+
+
+Apr 20 18:55:19.896 JST: //-1/xxxxxxxxxxxx/SIP/Msg/ccsipDisplayMsg:
+Received: 
+OPTIONS sip:192.168.120.31:5061;transport=tls SIP/2.0
+Via:SIP/2.0/TLS 144.196.102.245:8934;branch=z9hG4bKBroadworksSSE.-64.104.56.33V5409-0-100-47600935-1776678919912-
+From:<sip:144.196.102.245>;tag=47600935-1776678919912-
+To:<sip:192.168.120.31>
+Call-ID:SSE0955199122004261529877723@144.196.102.245
+CSeq:100 OPTIONS
+Max-Forwards:0
+Content-Length:0
+
+
+Apr 20 18:55:19.897 JST: //-1/xxxxxxxxxxxx/SIP/Msg/ccsipDisplayMsg:
+Sent: 
+SIP/2.0 200 OK
+Via: SIP/2.0/TLS 144.196.102.245:8934;branch=z9hG4bKBroadworksSSE.-64.104.56.33V5409-0-100-47600935-1776678919912-
+From: <sip:144.196.102.245>;tag=47600935-1776678919912-
+To: <sip:192.168.120.31>;tag=6342CF91-1570
+Date: Mon, 20 Apr 2026 09:55:19 GMT
+Call-ID: SSE0955199122004261529877723@144.196.102.245
+Server: Cisco-SIPGateway/IOS-17.9.4a
+CSeq: 100 OPTIONS
+Allow: INVITE, OPTIONS, BYE, CANCEL, ACK, PRACK, UPDATE, REFER, SUBSCRIBE, NOTIFY, INFO, REGISTER
+
+UC8300D#deb
+UC8300D#debug ccAllow-Events: kpml, telephone-event
+Accept: application/sdp
+Supported: 100rel,timer,resource-priority,replaces
+Content-Type: application/sdp
+Content-Length: 379
+
+v=0
+o=CiscoSystemsSIP-GW-UserAgent 588 653 IN IP4 192.168.120.31
+s=SIP Call
+c=IN IP4 192.168.120.31
+t=0 0
+m=audio 0 RTP/AVP 18 0 8 9 4 2 15 3
+c=IN IP4 192.168.120.31
+m=image 0 udptl t38
+c=IN IP4 192.168.120.31
+a=T38FaxVersion:0
+a=T38MaxBitRate:9600
+a=T38FaxRateManagement:transferredTCF
+a=T38FaxMaxBuffer:200
+a=T38FaxMaxDatagram:320
+a=T38FaxUdpEC:t38UDPRedundancy
+
+Apr 20 18:55:20.141 JST: //-1/xxxxxxxxxxxx/SIP/Msg/ccsipDisplayMsg:
+Received: 
+OPTIONS sip:192.168.120.31:5060 SIP/2.0
+Via: SIP/2.0/TCP 192.168.120.11:5060;branch=z9hG4bK28c2f431ed300
+From: <sip:192.168.120.11>;tag=1821584623
+To: <sip:192.168.120.31>
+Date: Mon, 20 Apr 2026 09:55:20 GMT
+Call-ID: 959f980-1f215aa2-28708-b78a8c0@192.168.120.11
+User-Agent: Cisco-CUCM15.0
+CSeq: 101 OPTIONS
+Contact: <sip:192.168.120.11:5060;transport=tcp>
+Max-Forwards: 0
+Content-Length: 0
+
+
+Apr 20 18:55:20.141 JST: //-1/xxxxxxxxxxxx/SIP/Msg/ccsipDisplayMsg:
+Sent: 
+SIP/2.0 200 OK
+Via: SIP/2.0/TCP 192.168.120.11:5060;branch=z9hG4bK28c2f431ed300
+From: <sip:192.168.120.11>;tag=1821584623
+To: <sip:192.168.120.31>;tag=6342D086-29C
+Date: Mon, 20 Apr 2026 09:55:20 GMT
+Call-ID: 959f980-1f215aa2-28708-b78a8c0@192.168.120.11
+Server: Cisco-SIPGateway/IOS-17.9.4a
+CSeq: 101 OPTIONS
+Allow: INVITE, OPTIONS, BYE, CANCEL, ACK, PRACK, UPDATE, REFER, SUBSCRIBE, NOTIFY, INFO, REGISTER
+Allow-Events: kpml, telephone-event
+Accept: application/sdp
+
+UC8300D#debug ccsi
+UC8300D#debug ccsip Supported: 100rel,timer,resource-priority,replaces
+Content-Type: application/sdp
+Content-Length: 381
+
+v=0
+o=CiscoSystemsSIP-GW-UserAgent 4961 5040 IN IP4 192.168.120.31
+s=SIP Call
+c=IN IP4 192.168.120.31
+t=0 0
+m=audio 0 RTP/AVP 18 0 8 9 4 2 15 3
+c=IN IP4 192.168.120.31
+m=image 0 udptl t38
+c=IN IP4 192.168.120.31
+a=T38FaxVersion:0
+a=T38MaxBitRate:9600
+a=T38FaxRateManagement:transferredTCF
+a=T38FaxMaxBuffer:200
+a=T38FaxMaxDatagram:320
+a=T38FaxUdpEC:t38UDPRedundancy
+
+UC8300D#debug ccsip medi
+UC8300D#debug ccsip media 
+SIP Call media tracing is enabled
+UC8300D#sh
+UC8300D#show voip
+UC8300D#show voip rt
+UC8300D#show voip rtp conn
+UC8300D#show voip rtp connections 
+Apr 20 18:55:30.384 JST: //-1/xxxxxxxxxxxx/SIP/Msg/ccsipDisplayMsg:
+Received: 
+OPTIONS sip:192.168.120.31:5060 SIP/2.0
+Via: SIP/2.0/TCP 192.168.120.11:5060;branch=z9hG4bK28c3036374268
+From: <sip:192.168.120.11>;tag=1986007174
+To: <sip:192.168.120.31>
+Date: Mon, 20 Apr 2026 09:55:30 GMT
+Call-ID: f4fda80-1f215aa2-28709-b78a8c0@192.168.120.11
+User-Agent: Cisco-CUCM15.0
+CSeq: 101 OPTIONS
+Contact: <sip:192.168.120.11:5060;transport=tcp>
+Max-Forwards: 0
+Content-Length: 0
+
+
+Apr 20 18:55:30.384 JST: //245114/E658ABBBB707/SIP/Media/sipSPICopyStunConfigFromPeerToCCB: STUN Usage is not enabled
+Apr 20 18:55:30.384 JST: //245114/E658ABBBB707/SIP/Media/sipSPISetMediaSrcAddr: Media src addr for stream 1 = 192.168.120.31
+Apr 20 18:55:30.385 JST: //-1/xxxxxxxxxxxx/SIP/Msg/ccsipDisplayMsg:
+Sent: 
+SIP/2.0 200 OK
+Via: SIP/2.0/TCP 192.168.120.11:5060;branch=z9hG4bK28c3036374268
+From: <sip:192.168.120.11>;tag=1986007174
+To: <sip:192.168.120.31>;tag=6342F889-527
+Date: Mon, 20 Apr 2026 09:55:30 GMT
+Call-ID: f4fda80-1f215aa2-28709-b78a8c0@192.168.120.11
+Server: Cisco-SIPGateway/IOS-17.9.4a
+CSeq: 101 OPTIONS
+Allow: INVITE, OPTIONS, BYE, CANCEL, ACK, PRACK, UPDATE, REFER, SUBSCRIBE, NOTIFY, INFO, REGISTER
+Allow-Events: kpml, telephone-event
+Accept: application/sdp
+
+UC8300D#show voip rtp connections 
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:31.019 JST Mon Apr 20 2026
+
+VoIP RTP Port Usage Information:
+Max Ports Available: 8091, Ports Reserved: 101, Ports in Use: 0
+Port range configured
+                                        Min   Max   Ports     Ports     Ports  
+Media-Address Range                     Port  Port  Available Reserved  In-use 
+------------------------------------------------------------------------------
+Global Media Pool                       16384 32766 8091      101       0      
+------------------------------------------------------------------------------
+
+No active connections found
+
+UC8300D#Supported: 100rel,timer,resource-priority,replaces
+Content-Type: application/sdp
+Content-Length: 381
+
+v=0
+o=CiscoSystemsSIP-GW-UserAgent 2419 2704 IN IP4 192.168.120.31
+s=SIP Call
+c=IN IP4 192.168.120.31
+t=0 0
+m=audio 0 RTP/AVP 18 0 8 9 4 2 15 3
+c=IN IP4 192.168.120.31
+m=image 0 udptl t38
+c=IN IP4 192.168.120.31
+a=T38FaxVersion:0
+a=T38MaxBitRate:9600
+a=T38FaxRateManagement:transferredTCF
+a=T38FaxMaxBuffer:200
+a=T38FaxMaxDatagram:320
+a=T38FaxUdpEC:t38UDPRedundancy
+
+UC8300D#
+UC8300D#
+UC8300D#
+UC8300D#sh
+UC8300D#show deb
+UC8300D#show debugging 
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.408 JST Mon Apr 20 2026
+
+IOSXE Conditional Debug Configs:
+
+Conditional Debug Global State: Stop
+
+
+IOSXE Packet Tracing Configs: 
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.410 JST Mon Apr 20 2026
+
+
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.420 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.428 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.437 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.445 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.454 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.462 JST Mon Apr 20 2026
+
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.470 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.478 JST Mon Apr 20 2026
+
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.486 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.494 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.503 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.512 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.524 JST Mon Apr 20 2026
+
+Packet Infra debugs:
+
+Ip Address                                               Port
+------------------------------------------------------|----------
+
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.534 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.542 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.550 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.558 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.566 JST Mon Apr 20 2026
+
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.574 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.582 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.592 JST Mon Apr 20 2026
+
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.600 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.608 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.616 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.624 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.634 JST Mon Apr 20 2026
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:34.643 JST Mon Apr 20 2026
+ 
+ 
+
+
+CCSIP SPI: SIP Call Message tracing is enabled	(filter is OFF)
+CCSIP SPI: SIP media debug tracing is enabled	(filter is OFF)
+
+
+
+UC8300D#
+Apr 20 18:55:38.346 JST: //-1/xxxxxxxxxxxx/SIP/Msg/ccsipDisplayMsg:
+Received: 
+SIP/2.0 401 Unauthorized
+Via:SIP/2.0/TLS 192.168.120.31:5061;received=64.104.56.33;branch=z9hG4bKFCD845D
+From:<sip:^0*@59685258.jp10.bcld.webex.com;otg=lgw_tky2074578062_lgu>;tag=63427EFB-238C
+To:<sip:^0*@59685258.jp10.bcld.webex.com>;tag=525573515-1776678938359
+Call-ID:F4DDC4DC-2D7311F1-A565DFF0-D3016C07
+CSeq:8859 REGISTER
+Session-ID:7dda7491008047e3a0f90017679c05fd;remote=e10c4f7400804a5297d9126e7e5ae5cf
+Content-Length:0
+
+
+UC8300D#
+Apr 20 18:55:40.929 JST: //-1/xxxxxxxxxxxx/SIP/Msg/ccsipDisplayMsg:
+Received: 
+OPTIONS sip:192.168.120.31:5060 SIP/2.0
+Via: SIP/2.0/TCP 192.168.120.11:5060;branch=z9hG4bK28c31630d3739
+From: <sip:192.168.120.11>;tag=950706076
+To: <sip:192.168.120.31>
+Date: Mon, 20 Apr 2026 09:55:40 GMT
+Call-ID: 1545bb80-1f215aa2-2870a-b78a8c0@192.168.120.11
+User-Agent: Cisco-CUCM15.0
+CSeq: 101 OPTIONS
+Contact: <sip:192.168.120.11:5060;transport=tcp>
+Max-Forwards: 0
+Content-Length: 0
+
+
+Apr 20 18:55:40.929 JST: //245116/ECA1B49FB708/SIP/Media/sipSPICopyStunConfigFromPeerToCCB: STUN Usage is not enabled
+Apr 20 18:55:40.929 JST: //245116/ECA1B49FB708/SIP/Media/sipSPISetMediaSrcAddr: Media src addr for stream 1 = 192.168.120.31
+Apr 20 18:55:40.929 JST: //-1/xxxxxxxxxxxx/SIP/Msg/ccsipDisplayMsg:
+Sent: 
+SIP/2.0 200 OK
+Via: SIP/2.0/TCP 192.168.120.11:5060;branch=z9hG4bK28c31630d3739
+From: <sip:192.168.120.11>;tag=950706076
+To: <sip:192.168.120.31>;tag=634321BA-1FBD
+Date: Mon, 20 Apr 2026 09:55:40 GMT
+Call-ID: 1545bb80-1f215aa2-2870a-b78a8c0@192.168.120.11
+Server: Cisco-SIPGateway/IOS-17.9.4a
+CSeq: 101 OPTIONS
+Allow: INVITE, OPTIONS, BYE, CANCEL, ACK, PRACK, UPDATE, REFER, SUBSCRIBE, NOTIFY, INFO, REGISTER
+Allow-Events: kpml, telephone-event
+Accept: application/sdp
+
+UC8300D#Supported: 100rel,timer,resource-priority,replaces
+Content-Type: application/sdp
+Content-Length: 381
+
+v=0
+o=CiscoSystemsSIP-GW-UserAgent 7025 4016 IN IP4 192.168.120.31
+s=SIP Call
+c=IN IP4 192.168.120.31
+t=0 0
+m=audio 0 RTP/AVP 18 0 8 9 4 2 15 3
+c=IN IP4 192.168.120.31
+m=image 0 udptl t38
+c=IN IP4 192.168.120.31
+a=T38FaxVersion:0
+a=T38MaxBitRate:9600
+a=T38FaxRateManagement:transferredTCF
+a=T38FaxMaxBuffer:200
+a=T38FaxMaxDatagram:320
+a=T38FaxUdpEC:t38UDPRedundancy
+
+UC8300D#
+Apr 20 18:55:44.291 JST: //245118/EEA28F4680C2/SIP/Media/sipSPICopyStunConfigFromPeerToCCB: Setting Firewall traversal parameters
+Apr 20 18:55:44.291 JST: //245118/EEA28F4680C2/SIP/Media/sipSPICopyStunConfigFromPeerToCCB: ICE-Lite Enabled
+Apr 20 18:55:44.291 JST: //245118/EEA28F4680C2/SIP/Media/sipsdp_stream_create: Firewall traversal enabled for stream:7F321292FF80
+Apr 20 18:55:44.292 JST: //245118/EEA28F4680C2/SIP/Media/sipSPISetMediaSrcAddr: Media src addr for stream 1 = 192.168.120.31
+Apr 20 18:55:44.292 JST: //-1/xxxxxxxxxxxx/SIP/Media/sipSPIReserveRtpPort: reserved port 16706 for stream 1
+Apr 20 18:55:44.292 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIAddSDPMediaPayload: Preferred method of dtmf relay is: 6, with payload: 101
+Apr 20 18:55:44.292 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIProcessRtpSessions: Processing stream state = STREAM_IDLE
+Apr 20 18:55:44.292 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIProcessRtpSessions: No active streams.
+Apr 20 18:55:44.292 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIProcessRtpSessions: Processing stream state = STREAM_ADDING
+Apr 20 18:55:44.292 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIAddStream: Adding stream 1 of type voice+dtmf (callid 245118) to the VOIP RTP library
+Apr 20 18:55:44.292 JST: //245118/EEA28F4680C2/SIP/Media/sipSPISetMediaSrcAddr: Media src addr for stream 1 = 192.168.120.31
+Apr 20 18:55:44.292 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIUpdateRtcpSession: sipSPIUpdateRtcpSession for m-line 1
+Apr 20 18:55:44.292 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIUpdateRtcpSession: Setting do_rtcp = FALSE  0
+Apr 20 18:55:44.292 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIUpdateRtcpSession: rtcp_session info
+	laddr = 192.168.120.31, lport = 16706, raddr = 0.0.0.0, rport=0, do_rtcp=FALSE
+	src_callid = 245118, dest_callid = -1, stream type = voice+dtmf, stream direction = SENDRECV
+	media_ip_addr =  - , vrf tableid = 0 media_addr_type = 1	negotiated_bandwidth (kbps) = 0 srtp_services = 0 nat_flag = 0
+Apr 20 18:55:44.292 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIUpdateRtcpSession: No rtp session, creating a new one
+Apr 20 18:55:44.292 JST: //245118/EEA28F4680C2/SIP/Media/sipSPICreateRtpSession: Stun packet reporting for ICE disabled in sipSPICreateRtpSession
+Apr 20 18:55:44.292 JST: //-1/xxxxxxxxxxxx/SIP/Media/sipSPIUpdateRtcpSession: Voice quality monitoring is not enabled for this RTP session due to sdp passthru enabled
+Apr 20 18:55:44.292 JST: //-1/xxxxxxxxxxxx/SIP/Media/sipSPIUpdateRtcpSession: VQM: gccb=0x0, gccb->callId=0, ccb->ccCallID=245118
+Apr 20 18:55:44.293 JST: //245118/EEA28F4680C2/SIP/Msg/ccsipDisplayMsg:
+Sent: 
+INVITE sip:+81357712380@59685258.jp10.bcld.webex.com:5061 SIP/2.0
+Via: SIP/2.0/TLS 192.168.120.31:5061;x-route-tag="tgrp:ISDN";branch=z9hG4bKFCDA4A5
+From: "09032130774" <sip:+819032130774@59685258.jp10.bcld.webex.com;otg=lgw_tky2074578062_lgu>;tag=63432EDD-18DF
+To: <sip:+81357712380@59685258.jp10.bcld.webex.com>
+Date: Mon, 20 Apr 2026 09:55:44 GMT
+Call-ID: EEA2DD5A-3BD511F1-B70EDFF0-D3016C07@192.168.120.31
+Supported: 100rel,timer,resource-priority,replaces
+Min-SE:  1800
+Cisco-Guid: 4003630918-1003819505-2160221361-0782264608
+User-Agent: Cisco-SIPGateway/IOS-17.9.4a
+Allow: INVITE, OPTIONS, BYE, CANCEL, ACK, PRACK, UPDATE, REFER, SUBSCRIBE, NOTIFY, INFO, REGISTER
+CSeq: 101 INVITE
+Max-Forwards: 70
+Timestamp: 1776678944
+Contact: <sip:+819032130774@192.168.120.31:5061;transport=tls>
+Expires: 180
+Allow-Events: telephone-event
+P-Asserted-Identity: <sip:+819032130774@192.168.120.31>
+Session-ID: 437de2c427a85fe5bc0b14d5be55ff48;remote=00000000000000000000000000000000
+Content-Type: application/sdp
+Content-Disposition: session;handling=required
+Content-Length: 336
+
+v=0
+o=CiscoSystemsSIP-GW-UserAgent 72 4519 IN IP4 192.168.120.31
+s=SIP Call
+c=IN IP4 192.168.120.31
+t=0 0
+m=audio 16706 RTP/SAVP 0 101
+c=IN IP4 192.168.120.31
+a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+a=rtpmap:0 PCMU/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-16
+a=ptime:20
+
+Apr 20 18:55:44.305 JST: //245118/EEA28F4680C2/SIP/Msg/ccsipDisplayMsg:
+Received: 
+SIP/2.0 100 Trying
+Via:SIP/2.0/TLS 192.168.120.31:5061;received=64.104.56.33;branch=z9hG4bKFCDA4A5;x-route-tag="tgrp:ISDN"
+From:"09032130774"<sip:+819032130774@59685258.jp10.bcld.webex.com;otg=lgw_tky2074578062_lgu>;tag=63432EDD-18DF
+To:<sip:+81357712380@59685258.jp10.bcld.webex.com>
+Call-ID:EEA2DD5A-3BD511F1-B70EDFF0-D3016C07@192.168.120.31
+CSeq:101 INVITE
+Session-ID:00000000000000000000000000000000;remote=437de2c427a85fe5bc0b14d5be55ff48
+Content-Length:0
+
+
+Apr 20 18:55:44.315 JST: //245118/EEA28F4680C2/SIP/Msg/ccsipDisplayMsg:
+Received: 
+SIP/2.0 401 Unauthorized
+Via:SIP/2.0/TLS 192.168.120.31:5061;received=64.104.56.33;branch=z9hG4bKFCDA4A5;x-route-tag="tgrp:ISDN"
+From:"09032130774"<sip:+819032130774@59685258.jp10.bcld.webex.com;otg=lgw_tky2074578062_lgu>;tag=63432EDD-18DF
+To:<sip:+81357712380@59685258.jp10.bcld.webex.com>;tag=1481469207-1776678944331
+Call-ID:EEA2DD5A-3BD511F1-B70EDFF0-D3016C07@192.168.120.31
+CSeq:101 INVITE
+WWW-Authenticate:DIGEST realm="BroadWorks",qop="auth",nonce="BroadWorksXmo70rr63Trw40zeBW",algorithm=MD5
+Session-ID:75c630cc0080460fae2f5bea5c25ef06;remote=437de2c427a85fe5bc0b14d5be55ff48
+Content-Length:0
+
+
+Apr 20 18:55:44.315 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIProcessRtpSessions: Processing stream state = STREAM_ADDING
+Apr 20 18:55:44.315 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIAddStream: Adding stream 1 of type voice+dtmf (callid 245118) to the VOIP RTP library
+Apr 20 18:55:44.315 JST: //245118/EEA28F4680C2/SIP/Media/sipSPISetMediaSrcAddr: Media src addr for stream 1 = 192.168.120.31
+Apr 20 18:55:44.315 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIUpdateRtcpSession: sipSPIUpdateRtcpSession for m-line 1
+Apr 20 18:55:44.315 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIUpdateRtcpSession: Setting do_rtcp = FALSE  0
+Apr 20 18:55:44.315 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIUpdateRtcpSession: rtcp_session info
+	laddr = 192.168.120.31, lport = 16706, raddr = 0.0.0.0, rport=0, do_rtcp=FALSE
+	src_callid = 245118, dest_callid = -1, stream type = voice+dtmf, stream direction = SENDRECV
+	media_ip_addr =  - , vrf tableid = 0 media_addr_type = 1	negotiated_bandwidth (kbps) = 0 srtp_services = 0 nat_flag = 0
+Apr 20 18:55:44.316 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIUpdateRtcpSession: RTP session already created - update
+Apr 20 18:55:44.316 JST: //-1/xxxxxxxxxxxx/SIP/Media/sipSPIUpdateRtcpSession: VQM: gccb=0x0, gccb->callId=0, ccb->ccCallID=245118
+Apr 20 18:55:44.316 JST: //245118/EEA28F4680C2/SIP/Msg/ccsipDisplayMsg:
+Sent: 
+ACK sip:+81357712380@59685258.jp10.bcld.webex.com:5061 SIP/2.0
+Via: SIP/2.0/TLS 192.168.120.31:5061;x-route-tag="tgrp:ISDN";branch=z9hG4bKFCDA4A5
+From: "09032130774" <sip:+819032130774@59685258.jp10.bcld.webex.com;otg=lgw_tky2074578062_lgu>;tag=63432EDD-18DF
+To: <sip:+81357712380@59685258.jp10.bcld.webex.com>;tag=1481469207-1776678944331
+Date: Mon, 20 Apr 2026 09:55:44 GMT
+Call-ID: EEA2DD5A-3BD511F1-B70EDFF0-D3016C07@192.168.120.31
+Max-Forwards: 70
+CSeq: 101 ACK
+Allow-Events: telephone-event
+Session-ID: 437de2c427a85fe5bc0b14d5be55ff48;remote=75c630cc0080460fae2f5bea5c25ef06
+Content-Length: 0
+
+
+Apr 20 18:55:44.316 JST: //245118/EEA28F4680C2/SIP/Msg/ccsipDisplayMsg:
+Sent: 
+INVITE sip:+81357712380@59685258.jp10.bcld.webex.com:5061 SIP/2.0
+Via: SIP/2.0/TLS 192.168.120.31:5061;x-route-tag="tgrp:ISDN";branch=z9hG4bKFCDB1D0A
+From: "09032130774" <sip:+819032130774@59685258.jp10.bcld.webex.com;otg=lgw_tky2074578062_lgu>;tag=63432EDD-18DF
+To: <sip:+81357712380@59685258.jp10.bcld.webex.com>
+Date: Mon, 20 Apr 2026 09:55:44 GMT
+Call-ID: EEA2DD5A-3BD511F1-B70EDFF0-D3016C07@192.168.120.31
+Supported: 100rel,timer,resource-priority,replaces
+Min-SE:  1800
+Cisco-Guid: 4003630918-1003819505-2160221361-0782264608
+User-Agent: Cisco-SIPGateway/IOS-17.9.4a
+Allow: INVITE, OPTIONS, BYE, CANCEL, ACK, PRACK, UPDATE, REFER, SUBSCRIBE, NOTIFY, INFO, REGISTER
+CSeq: 102 INVITE
+Max-Forwards: 70
+Timestamp: 1776678944
+Contact: <sip:+819032130774@192.168.120.31:5061;transport=tls>
+Expires: 180
+Allow-Events: telephone-event
+Authorization: Digest username="LGW_TKY2074578062_LGU",realm="BroadWorks",uri="sips:+81357712380@59685258.jp10.bcld.webex.com:5061",response="666510c86f060ca79aad187869356177",nonce="BroadWorksXmo70rr63Trw40zeBW",cnonce="6D2AD736",qop=auth,algorithm=MD5,nc=00000001
+P-Asserted-Identity: <sip:+819032130774@192.168.120.31>
+Session-ID: 437de2c427a85fe5bc0b14d5be55ff48;remote=00000000000000000000000000000000
+Content-Type: application/sdp
+Content-Disposition: session;handling=required
+Content-Length: 336
+
+v=0
+o=CiscoSystemsSIP-GW-UserAgent 72 4519 IN IP4 192.168.120.31
+s=SIP Call
+c=IN IP4 192.168.120.31
+t=0 0
+m=audio 16706 RTP/SAVP 0 101
+c=IN IP4 192.168.120.31
+a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+a=rtpmap:0 PCMU/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-16
+a=ptime:20
+
+Apr 20 18:55:44.325 JST: //245118/EEA28F4680C2/SIP/Msg/ccsipDisplayMsg:
+Received: 
+SIP/2.0 100 Trying
+Via:SIP/2.0/TLS 192.168.120.31:5061;received=64.104.56.33;branch=z9hG4bKFCDB1D0A;x-route-tag="tgrp:ISDN"
+From:"09032130774"<sip:+819032130774@59685258.jp10.bcld.webex.com;otg=lgw_tky2074578062_lgu>;tag=63432EDD-18DF
+To:<sip:+81357712380@59685258.jp10.bcld.webex.com>
+Call-ID:EEA2DD5A-3BD511F1-B70EDFF0-D3016C07@192.168.120.31
+CSeq:102 INVITE
+Session-ID:00000000000000000000000000000000;remote=437de2c427a85fe5bc0b14d5be55ff48
+Content-Length:0
+
+
+Apr 20 18:55:44.356 JST: //245118/EEA28F4680C2/SIP/Msg/ccsipDisplayMsg:
+Received: 
+SIP/2.0 180 Ringing
+Via:SIP/2.0/TLS 192.168.120.31:5061;received=64.104.56.33;branch=z9hG4bKFCDB1D0A;x-route-tag="tgrp:ISDN"
+From:"09032130774"<sip:+819032130774@59685258.jp10.bcld.webex.com;otg=lgw_tky2074578062_lgu>;tag=63432EDD-18DF
+To:<sip:+81357712380@59685258.jp10.bcld.webex.com>;tag=705474610-1776678944372
+Call-ID:EEA2DD5A-3BD511F1-B70EDFF0-D3016C07@192.168.120.31
+CSeq:102 INVITE
+Contact:<sip:144.196.102.245:8934;transport=tls>
+Supported:
+P-Asserted-Identity:<sip:+81357712380@10.71.24.6;user=phone>
+Privacy:none
+Allow:ACK,BYE,CANCEL,INFO,INVITE,OPTIONS,PRACK,REFER,NOTIFY,UPDATE
+X-BroadWorks-Correlation-Info:d1c59fb9-9660-486d-8c68-b844b6bb4420
+Session-ID:041c680e00804708a883a09ecdf8c9f5;remote=437de2c427a85fe5bc0b14d5be55ff48
+Content-Length:0
+
+
+Apr 20 18:55:44.502 JST: //245118/EEA28F4680C2/SIP/Msg/ccsipDisplayMsg:
+Received: 
+SIP/2.0 200 OK
+Via:SIP/2.0/TLS 192.168.120.31:5061;received=64.104.56.33;branch=z9hG4bKFCDB1D0A;x-route-tag="tgrp:ISDN"
+From:"09032130774"<sip:+819032130774@59685258.jp10.bcld.webex.com;otg=lgw_tky2074578062_lgu>;tag=63432EDD-18DF
+To:<sip:+81357712380@59685258.jp10.bcld.webex.com>;tag=705474610-1776678944372
+Call-ID:EEA2DD5A-3BD511F1-B70EDFF0-D3016C07@192.168.120.31
+CSeq:102 INVITE
+Contact:<sip:144.196.102.245:8934;transport=tls>
+Supported:
+P-Asserted-Identity:<sip:+81357712380@10.71.24.6;user=phone>
+Privacy:none
+Allow:ACK,BYE,CANCEL,INFO,INVITE,OPTIONS,PRACK,REFER,NOTIFY,UPDATE
+Accept:application/media_control+xml,application/sdp
+X-RTMS-CID: 6b285c45-be5a-4e5f-9dbc-477ac0bb0223
+X-BroadWorks-Correlation-Info:d1c59fb9-9660-486d-8c68-b844b6bb4420
+Session-ID:041c680e00804708a883a09ecdf8c9f5;remote=437de2c427a85fe5bc0b14d5be55ff48
+Content-Type:application/sdp
+Content-Disposition:session
+Content-Length:301
+
+v=0
+o=BroadWorks 67599684 1776678944515 IN IP4 144.196.102.32
+s=-
+c=IN IP4 144.196.102.32
+t=0 0
+m=audio 31762 RTP/SAVP 0 101
+a=rtpmap:0 PCMU/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-15
+a=ptime:20
+a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+Apr 20 18:55:44.502 JST: //245118/EEA28F4680C2/SIP/Media/sipsdp_stream_create: Firewall traversal enabled for stream:7F32123859C0
+Apr 20 18:55:44.502 JST: //245118/EEA28F4680C2/SIP/Media/sipSPISetMediaSrcAddr: Media src addr for stream 1 = 192.168.120.31
+Apr 20 18:55:44.502 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIDoPtimeNegotiation: Offered ptime:20, Negotiated ptime:20 Negotiated codec bytes: 160 for codec g711ulaw
+Apr 20 18:55:44.502 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIUpdCallWithSdpInfo: 
+	Preferred Codec        : g711ulaw, bytes :160
+	Preferred  DTMF relay  : rtp-nte
+	Preferred NTE payload  : 101
+	Early Media            : No
+	Delayed Media          : No
+	Bridge Done            : No
+	New Media              : No
+	DSP DNLD Reqd          : No
+
+Apr 20 18:55:44.502 JST: //245118/EEA28F4680C2/SIP/Media/sipSPISetMediaSrcAddr: Media src addr for stream 1 = 192.168.120.31
+Apr 20 18:55:44.502 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIUpdCallWithSdpInfo: 
+	  Stream type            : voice+dtmf
+	  Media line             : 1
+	  State                  : STREAM_ADDING (2)
+	  Stream address type    : 1
+	  Callid                 : 245118
+	  Negotiated Codec       : g711ulaw, bytes :160
+	  Nego. Codec payload    : 0 (tx), 0 (rx)
+	  Negotiated DTMF relay  : rtp-nte
+	  Negotiated NTE payload : 101 (tx), 101 (rx)
+	  Negotiated CN payload  : 0
+	  Media Srce Addr/Port   : [192.168.120.31]:16706
+	  Media Dest Addr/Port   : [144.196.102.32]:31762
+
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIProcessRtpSessions: Processing stream state = STREAM_ADDING
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIAddStream: Adding stream 1 of type voice+dtmf (callid 245118) to the VOIP RTP library
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPISetMediaSrcAddr: Media src addr for stream 1 = 192.168.120.31
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIUpdateRtcpSession: sipSPIUpdateRtcpSession for m-line 1
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIUpdateRtcpSession: setting do_rtcp= TRUE for non forked leg 1
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIUpdateRtcpSession: rtcp_session info
+	laddr = 192.168.120.31, lport = 16706, raddr = 144.196.102.32, rport=31762, do_rtcp=TRUE
+	src_callid = 245118, dest_callid = 245117, stream type = voice+dtmf, stream direction = SENDRECV
+	media_ip_addr = 144.196.102.32, vrf tableid = 0 media_addr_type = 1	negotiated_bandwidth (kbps) = 0 srtp_services = 3 nat_flag = 0
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIUpdateRtcpSession: RTP session already created - update
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIDestroyChangingTRPContexts: Close & Delete PinHole:: laddr:192.168.120.31, lport:16706, raddr:0.0.0.0, rport:0
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIDestroyChangingTRPContexts: Close & Delete PinHole:: laddr:192.168.120.31, lport:16707, raddr:0.0.0.0, rport:1
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIHandleUpdatePinHole: Opening pinhole for stream:7F32123859C0
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIPrepareOnWireFlowData: 
+       Flags=0x4400
+       Keep Alive=1
+       Cat Life=6
+       CAI Count=2
+       Authz Agent ID=1
+       Burst Bandwidth=0x0
+       Sust Bandwidth=0x0
+       Associated Stream=0x0
+       Source User Priority=0
+       Dest User Priority=0
+       GUCID=0x0000000000000000
+       Security Param Index=0
+       Pseudotime=1665226
+       Authentication Tag=0x0000000000000000
+       Local CAI=0x618BD5C3F513559414A2B8F7
+       Remote CAI=0x88097F7C9A822FE237A84429
+       EHK=0xADDC72C60E83DD7E3D29461C34D4F6B3
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIOpenPinHole: Open PinHole:: laddr:192.168.120.31, lport:16706, raddr:144.196.102.32, rport:31762, pFlowData:7F3212B563B8, onwire_cfd:7F321241E218, app_context:7F3212441A30, app_context->vrfid:0
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIPrepareOnWireFlowData: 
+       Flags=0x4400
+       Keep Alive=1
+       Cat Life=6
+       CAI Count=2
+       Authz Agent ID=1
+       Burst Bandwidth=0x0
+       Sust Bandwidth=0x0
+       Associated Stream=0x0
+       Source User Priority=0
+       Dest User Priority=0
+       GUCID=0x0000000000000000
+       Security Param Index=0
+       Pseudotime=1665226
+       Authentication Tag=0x0000000000000000
+       Local CAI=0x963682FF561DA626C4306D47
+       Remote CAI=0x764BC3778D2C250B727653BB
+       EHK=0xADDC72C60E83DD7E3D29461C34D4F6B3
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIOpenPinHole: Open PinHole:: laddr:192.168.120.31, lport:16707, raddr:144.196.102.32, rport:31763, pFlowData:7F3212B563B8, onwire_cfd:7F3212417790, app_context:7F3212435660
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIOpenPinHole: STUN packet reporting enabled
+Apr 20 18:55:44.503 JST: //-1/xxxxxxxxxxxx/SIP/Media/sipSPIUpdateRtcpSession: VQM: gccb=0x0, gccb->callId=0, ccb->ccCallID=245118
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIGetNewLocalMediaDirection: 
+	New Remote Media Direction = UNKNOWN
+	Present Local Media Direction = SENDRECV
+	New Local Media Direction = SENDRECV
+	retVal = 0
+
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sip_set_srtp_in_caps: Setting SRTP for caps exchange
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPISetStreamInfo: 1 Active Streams
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPISetStreamInfo: Adding stream type (voice+dtmf) from media
+line 1 codec g711ulaw
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPISetStreamInfo: 
+caps.stream_count=1,caps.stream[0].stream_type=0x3, caps.stream_list.xmitFunc=
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPISetStreamInfo: voip_rtp_xmit, caps.stream_list.context=
+Apr 20 18:55:44.503 JST: //245118/EEA28F4680C2/SIP/Media/sipSPISetStreamInfo: 0x7F32123B08B8 (gccb)
+Apr 20 18:55:44.505 JST: //245118/EEA28F4680C2/SIP/Msg/ccsipDisplayMsg:
+Sent: 
+ACK sip:144.196.102.245:8934;transport=tls SIP/2.0
+Via: SIP/2.0/TLS 192.168.120.31:5061;x-route-tag="tgrp:ISDN";branch=z9hG4bKFCDC1A2E
+From: "09032130774" <sip:+819032130774@59685258.jp10.bcld.webex.com;otg=lgw_tky2074578062_lgu>;tag=63432EDD-18DF
+To: <sip:+81357712380@59685258.jp10.bcld.webex.com>;tag=705474610-1776678944372
+Date: Mon, 20 Apr 2026 09:55:44 GMT
+Call-ID: EEA2DD5A-3BD511F1-B70EDFF0-D3016C07@192.168.120.31
+Max-Forwards: 70
+CSeq: 102 ACK
+Authorization: Digest username="LGW_TKY2074578062_LGU",realm="BroadWorks",uri="sips:+81357712380@59685258.jp10.bcld.webex.com:5061",response="666510c86f060ca79aad187869356177",nonce="BroadWorksXmo70rr63Trw40zeBW",cnonce="6D2AD736",qop=auth,algorithm=MD5,nc=00000001
+Allow-Events: telephone-event
+Content-Length: 0
+
+
+UC8300D#
+Apr 20 18:55:44.749 JST: %ISDN-6-CONNECT: Interface Serial0/1/0:18 is now connected to 09032130774 N/A
+UC8300D#show debugging voip rtp connections 
+Load for five secs: 1%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:49.637 JST Mon Apr 20 2026
+
+VoIP RTP Port Usage Information:
+Max Ports Available: 8091, Ports Reserved: 101, Ports in Use: 1
+Port range configured
+                                        Min   Max   Ports     Ports     Ports  
+Media-Address Range                     Port  Port  Available Reserved  In-use 
+------------------------------------------------------------------------------
+Global Media Pool                       16384 32766 8091      101       1      
+------------------------------------------------------------------------------
+VoIP RTP active connections :
+No. CallId     dstCallId  LocalRTP RmtRTP   LocalIP                                	RemoteIP                                  MPSS 	VRF 
+1     245118     245117     16706    31762    192.168.120.31                         	144.196.102.32                            NO   	NA                  
+Found 1 active RTP connections
+
+UC8300D#
+Apr 20 18:55:51.611 JST: //-1/xxxxxxxxxxxx/SIP/Msg/ccsipDisplayMsg:
+Received: 
+OPTIONS sip:192.168.120.31:5060 SIP/2.0
+Via: SIP/2.0/TCP 192.168.120.11:5060;branch=z9hG4bK28c325fbe5942
+From: <sip:192.168.120.11>;tag=1812915528
+To: <sip:192.168.120.31>
+Date: Mon, 20 Apr 2026 09:55:51 GMT
+Call-ID: 1bd43300-1f215aa2-2870b-b78a8c0@192.168.120.11
+User-Agent: Cisco-CUCM15.0
+CSeq: 101 OPTIONS
+Contact: <sip:192.168.120.11:5060;transport=tcp>
+Max-Forwards: 0
+Content-Length: 0
+
+
+Apr 20 18:55:51.611 JST: //245119/F2FFA728B70F/SIP/Media/sipSPICopyStunConfigFromPeerToCCB: STUN Usage is not enabled
+Apr 20 18:55:51.611 JST: //245119/F2FFA728B70F/SIP/Media/sipSPISetMediaSrcAddr: Media src addr for stream 1 = 192.168.120.31
+Apr 20 18:55:51.612 JST: //-1/xxxxxxxxxxxx/SIP/Msg/ccsipDisplayMsg:
+Sent: 
+SIP/2.0 200 OK
+Via: SIP/2.0/TCP 192.168.120.11:5060;branch=z9hG4bK28c325fbe5942
+From: <sip:192.168.120.11>;tag=1812915528
+To: <sip:192.168.120.31>;tag=63434B74-BAE
+Date: Mon, 20 Apr 2026 09:55:51 GMT
+Call-ID: 1bd43300-1f215aa2-2870b-b78a8c0@192.168.120.11
+Server: Cisco-SIPGateway/IOS-17.9.4a
+CSeq: 101 OPTIONS
+Allow: INVITE, OPTIONS, BYE, CANCEL, ACK, PRACK, UPDATE, REFER, SUBSCRIBE, NOTIFY, INFO, REGISTER
+Allow-Events: kpml, telephone-event
+Accept: application/sdp
+
+UC8300D#Supported: 100rel,timer,resource-priority,replaces
+Content-Type: application/sdp
+Content-Length: 381
+
+v=0
+o=CiscoSystemsSIP-GW-UserAgent 2093 2063 IN IP4 192.168.120.31
+s=SIP Call
+c=IN IP4 192.168.120.31
+t=0 0
+m=audio 0 RTP/AVP 18 0 8 9 4 2 15 3
+c=IN IP4 192.168.120.31
+m=image 0 udptl t38
+c=IN IP4 192.168.120.31
+a=T38FaxVersion:0
+a=T38MaxBitRate:9600
+a=T38FaxRateManagement:transferredTCF
+a=T38FaxMaxBuffer:200
+a=T38FaxMaxDatagram:320
+a=T38FaxUdpEC:t38UDPRedundancy
+
+UC8300D#show voip rtp connections 
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:55.479 JST Mon Apr 20 2026
+
+VoIP RTP Port Usage Information:
+Max Ports Available: 8091, Ports Reserved: 101, Ports in Use: 1
+Port range configured
+                                        Min   Max   Ports     Ports     Ports  
+Media-Address Range                     Port  Port  Available Reserved  In-use 
+------------------------------------------------------------------------------
+Global Media Pool                       16384 32766 8091      101       1      
+------------------------------------------------------------------------------
+VoIP RTP active connections :
+No. CallId     dstCallId  LocalRTP RmtRTP   LocalIP                                	RemoteIP                                  MPSS 	VRF 
+1     245118     245117     16706    31762    192.168.120.31                         	144.196.102.32                            NO   	NA                  
+Found 1 active RTP connections
+
+UC8300D#show voip rtp connections 
+Load for five secs: 1%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:55:59.900 JST Mon Apr 20 2026
+
+VoIP RTP Port Usage Information:
+Max Ports Available: 8091, Ports Reserved: 101, Ports in Use: 1
+Port range configured
+                                        Min   Max   Ports     Ports     Ports  
+Media-Address Range                     Port  Port  Available Reserved  In-use 
+------------------------------------------------------------------------------
+Global Media Pool                       16384 32766 8091      101       1      
+------------------------------------------------------------------------------
+VoIP RTP active connections :
+No. CallId     dstCallId  LocalRTP RmtRTP   LocalIP                                	RemoteIP                                  MPSS 	VRF 
+1     245118     245117     16706    31762    192.168.120.31                         	144.196.102.32                            NO   	NA                  
+Found 1 active RTP connections
+
+UC8300D#
+Apr 20 18:56:02.125 JST: //-1/xxxxxxxxxxxx/SIP/Msg/ccsipDisplayMsg:
+Received: 
+OPTIONS sip:192.168.120.31:5060 SIP/2.0
+Via: SIP/2.0/TCP 192.168.120.11:5060;branch=z9hG4bK28c3314bed6e1
+From: <sip:192.168.120.11>;tag=1726147275
+To: <sip:192.168.120.31>
+Date: Mon, 20 Apr 2026 09:56:02 GMT
+Call-ID: 2262aa80-1f215aa2-2870c-b78a8c0@192.168.120.11
+User-Agent: Cisco-CUCM15.0
+CSeq: 101 OPTIONS
+Contact: <sip:192.168.120.11:5060;transport=tcp>
+Max-Forwards: 0
+Content-Length: 0
+
+
+Apr 20 18:56:02.125 JST: //245121/F943F78FB711/SIP/Media/sipSPICopyStunConfigFromPeerToCCB: STUN Usage is not enabled
+Apr 20 18:56:02.125 JST: //245121/F943F78FB711/SIP/Media/sipSPISetMediaSrcAddr: Media src addr for stream 1 = 192.168.120.31
+Apr 20 18:56:02.126 JST: //-1/xxxxxxxxxxxx/SIP/Msg/ccsipDisplayMsg:
+Sent: 
+SIP/2.0 200 OK
+Via: SIP/2.0/TCP 192.168.120.11:5060;branch=z9hG4bK28c3314bed6e1
+From: <sip:192.168.120.11>;tag=1726147275
+To: <sip:192.168.120.31>;tag=63437486-877
+Date: Mon, 20 Apr 2026 09:56:02 GMT
+Call-ID: 2262aa80-1f215aa2-2870c-b78a8c0@192.168.120.11
+Server: Cisco-SIPGateway/IOS-17.9.4a
+CSeq: 101 OPTIONS
+Allow: INVITE, OPTIONS, BYE, CANCEL, ACK, PRACK, UPDATE, REFER, SUBSCRIBE, NOTIFY, INFO, REGISTER
+Allow-Events: kpml, telephone-event
+Accept: application/sdp
+
+UC8300D#Supported: 100rel,timer,resource-priority,replaces
+Content-Type: application/sdp
+Content-Length: 381
+
+v=0
+o=CiscoSystemsSIP-GW-UserAgent 6836 8007 IN IP4 192.168.120.31
+s=SIP Call
+c=IN IP4 192.168.120.31
+t=0 0
+m=audio 0 RTP/AVP 18 0 8 9 4 2 15 3
+c=IN IP4 192.168.120.31
+m=image 0 udptl t38
+c=IN IP4 192.168.120.31
+a=T38FaxVersion:0
+a=T38MaxBitRate:9600
+a=T38FaxRateManagement:transferredTCF
+a=T38FaxMaxBuffer:200
+a=T38FaxMaxDatagram:320
+a=T38FaxUdpEC:t38UDPRedundancy
+
+UC8300D#show voip rtp connections 
+Load for five secs: 1%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:56:06.230 JST Mon Apr 20 2026
+
+VoIP RTP Port Usage Information:
+Max Ports Available: 8091, Ports Reserved: 101, Ports in Use: 1
+Port range configured
+                                        Min   Max   Ports     Ports     Ports  
+Media-Address Range                     Port  Port  Available Reserved  In-use 
+------------------------------------------------------------------------------
+Global Media Pool                       16384 32766 8091      101       1      
+------------------------------------------------------------------------------
+VoIP RTP active connections :
+No. CallId     dstCallId  LocalRTP RmtRTP   LocalIP                                	RemoteIP                                  MPSS 	VRF 
+1     245118     245117     16706    31762    192.168.120.31                         	144.196.102.32                            NO   	NA                  
+Found 1 active RTP connections
+
+UC8300D#show voip rtp connections 
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:56:12.844 JST Mon Apr 20 2026
+
+VoIP RTP Port Usage Information:
+Max Ports Available: 8091, Ports Reserved: 101, Ports in Use: 1
+Port range configured
+                                        Min   Max   Ports     Ports     Ports  
+Media-Address Range                     Port  Port  Available Reserved  In-use 
+------------------------------------------------------------------------------
+Global Media Pool                       16384 32766 8091      101       1      
+------------------------------------------------------------------------------
+VoIP RTP active connections :
+No. CallId     dstCallId  LocalRTP RmtRTP   LocalIP                                	RemoteIP                                  MPSS 	VRF 
+1     245118     245117     16706    31762    192.168.120.31                         	144.196.102.32                            NO   	NA                  
+Found 1 active RTP connections
+
+UC8300D#
+Apr 20 18:56:12.504 JST: //-1/xxxxxxxxxxxx/SIP/Msg/ccsipDisplayMsg:
+Received: 
+OPTIONS sip:192.168.120.31:5060 SIP/2.0
+Via: SIP/2.0/TCP 192.168.120.11:5060;branch=z9hG4bK28c345d29bf8a
+From: <sip:192.168.120.11>;tag=169528337
+To: <sip:192.168.120.31>
+Date: Mon, 20 Apr 2026 09:56:12 GMT
+Call-ID: 28588b80-1f215aa2-2870d-b78a8c0@192.168.120.11
+User-Agent: Cisco-CUCM15.0
+CSeq: 101 OPTIONS
+Contact: <sip:192.168.120.11:5060;transport=tcp>
+Max-Forwards: 0
+Content-Length: 0
+
+
+Apr 20 18:56:12.504 JST: //245122/FF73AC65B712/SIP/Media/sipSPICopyStunConfigFromPeerToCCB: STUN Usage is not enabled
+Apr 20 18:56:12.504 JST: //245122/FF73AC65B712/SIP/Media/sipSPISetMediaSrcAddr: Media src addr for stream 1 = 192.168.120.31
+Apr 20 18:56:12.505 JST: //-1/xxxxxxxxxxxx/SIP/Msg/ccsipDisplayMsg:
+Sent: 
+SIP/2.0 200 OK
+Via: SIP/2.0/TCP 192.168.120.11:5060;branch=z9hG4bK28c345d29bf8a
+From: <sip:192.168.120.11>;tag=169528337
+To: <sip:192.168.120.31>;tag=63439D11-2087
+Date: Mon, 20 Apr 2026 09:56:12 GMT
+Call-ID: 28588b80-1f215aa2-2870d-b78a8c0@192.168.120.11
+Server: Cisco-SIPGateway/IOS-17.9.4a
+CSeq: 101 OPTIONS
+Allow: INVITE, OPTIONS, BYE, CANCEL, ACK, PRACK, UPDATE, REFER, SUBSCRIBE, NOTIFY, INFO, REGISTER
+Allow-Events: kpml, telephone-event
+Accept: application/sdp
+
+UC8300D#Supported: 100rel,timer,resource-priority,replaces
+Content-Type: application/sdp
+Content-Length: 381
+
+v=0
+o=CiscoSystemsSIP-GW-UserAgent 2612 9610 IN IP4 192.168.120.31
+s=SIP Call
+c=IN IP4 192.168.120.31
+t=0 0
+m=audio 0 RTP/AVP 18 0 8 9 4 2 15 3
+c=IN IP4 192.168.120.31
+m=image 0 udptl t38
+c=IN IP4 192.168.120.31
+a=T38FaxVersion:0
+a=T38MaxBitRate:9600
+a=T38FaxRateManagement:transferredTCF
+a=T38FaxMaxBuffer:200
+a=T38FaxMaxDatagram:320
+a=T38FaxUdpEC:t38UDPRedundancy
+
+UC8300D#
+Apr 20 18:56:15.019 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIHandleUpdatePinHole: pinhole already opened for this 4-tuple
+Apr 20 18:56:15.045 JST: //245118/EEA28F4680C2/SIP/Msg/ccsipDisplayMsg:
+Sent: 
+BYE sip:144.196.102.245:8934;transport=tls SIP/2.0
+Via: SIP/2.0/TLS 192.168.120.31:5061;x-route-tag="tgrp:ISDN";branch=z9hG4bKFCDE494
+From: "09032130774" <sip:+819032130774@59685258.jp10.bcld.webex.com;otg=lgw_tky2074578062_lgu>;tag=63432EDD-18DF
+To: <sip:+81357712380@59685258.jp10.bcld.webex.com>;tag=705474610-1776678944372
+Date: Mon, 20 Apr 2026 09:55:44 GMT
+Call-ID: EEA2DD5A-3BD511F1-B70EDFF0-D3016C07@192.168.120.31
+User-Agent: Cisco-SIPGateway/IOS-17.9.4a
+Max-Forwards: 70
+P-Asserted-Identity: <sip:+819032130774@192.168.120.31>
+Timestamp: 1776678975
+CSeq: 103 BYE
+Authorization: Digest username="LGW_TKY2074578062_LGU",realm="BroadWorks",uri="sip:144.196.102.245:8934;transport=tls",response="d85050ae9e5134e4435debea3fe9633d",nonce="BroadWorksXmo70rr63Trw40zeBW",cnonce="31EB0C32",qop=auth,algorithm=MD5,nc=00000002
+Reason: Q.850;cause=102
+P-RTP-Stat: PS=1524,OS=320040,PR=0,OR=0,PL=0,JI=1,LA=-1,DU=30
+Session-ID: 437de2c427a85fe5bc0b14d5be55ff48;remote=041c680e00804708a883a09ecdf8c9f5
+Content-Length: 0
+
+
+Apr 20 18:56:15.055 JST: //245118/EEA28F4680C2/SIP/Msg/ccsipDisplayMsg:
+Received: 
+SIP/2.0 200 OK
+Via:SIP/2.0/TLS 192.168.120.31:5061;received=64.104.56.33;branch=z9hG4bKFCDE494;x-route-tag="tgrp:ISDN"
+From:"09032130774"<sip:+819032130774@59685258.jp10.bcld.webex.com;otg=lgw_tky2074578062_lgu>;tag=63432EDD-18DF
+To:<sip:+81357712380@59685258.jp10.bcld.webex.com>;tag=705474610-1776678944372
+Call-ID:EEA2DD5A-3BD511F1-B70EDFF0-D3016C07@192.168.120.31
+CSeq:103 BYE
+Session-ID:041c680e00804708a883a09ecdf8c9f5;remote=437de2c427a85fe5bc0b14d5be55ff48
+Content-Length:0
+
+
+Apr 20 18:56:15.055 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIHandleDestroyRtpSession: stream:7F32123859C0
+Apr 20 18:56:15.055 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIHandleDestroyRtpSession: Close PinHole:: laddr:192.168.120.31, lport:16706, raddr:144.196.102.32, rport:31762
+Apr 20 18:56:15.055 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIHandleDestroyRtpSession: Delete PinHole:: laddr:192.168.120.31, lport:16706, raddr:144.196.102.32, rport:31762
+Apr 20 18:56:15.055 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIHandleDestroyRtpSession: Close PinHole:: laddr:192.168.120.31, lport:16707, raddr:144.196.102.32, rport:31763
+Apr 20 18:56:15.055 JST: //245118/EEA28F4680C2/SIP/Media/sipSPIHandleDestroyRtpSession: Delete PinHole:: laddr:192.168.120.31, lport:16707, raddr:144.196.102.32, rport:31763
+UC8300D#
+Apr 20 18:56:15.064 JST: %ISDN-6-DISCONNECT: Interface Serial0/1/0:18  disconnected from 09032130774 , call lasted 30 seconds
+UC8300D#show voip rtp connections 
+Load for five secs: 0%/0%; one minute: 0%; five minutes: 0%
+Time source is NTP, 18:56:18.200 JST Mon Apr 20 2026
+
+VoIP RTP Port Usage Information:
+Max Ports Available: 8091, Ports Reserved: 101, Ports in Use: 0
+Port range configured
+                                        Min   Max   Ports     Ports     Ports  
+Media-Address Range                     Port  Port  Available Reserved  In-use 
+------------------------------------------------------------------------------
+Global Media Pool                       16384 32766 8091      101       0      
+------------------------------------------------------------------------------
+
+No active connections found
+
+UC8300D#
+Apr 20 18:56:23.060 JST: //-1/xxxxxxxxxxxx/SIP/Msg/ccsipDisplayMsg:
+Received: 
+OPTIONS sip:192.168.120.31:5060 SIP/2.0
+Via: SIP/2.0/TCP 192.168.120.11:5060;branch=z9hG4bK28c354fedcb0d
+From: <sip:192.168.120.11>;tag=1985027802
+To: <sip:192.168.120.31>
+Date: Mon, 20 Apr 2026 09:56:23 GMT
+Call-ID: 2ee70300-1f215aa2-2870e-b78a8c0@192.168.120.11
+User-Agent: Cisco-CUCM15.0
+CSeq: 101 OPTIONS
+Contact: <sip:192.168.120.11:5060;transport=tcp>
+Max-Forwards: 0
+Content-Length: 0
+
+
+Apr 20 18:56:23.061 JST: //245123/05BE8BC6B713/SIP/Media/sipSPICopyStunConfigFromPeerToCCB: STUN Usage is not enabled
+Apr 20 18:56:23.061 JST: //245123/05BE8BC6B713/SIP/Media/sipSPISetMediaSrcAddr: Media src addr for stream 1 = 192.168.120.31
+Apr 20 18:56:23.061 JST: //-1/xxxxxxxxxxxx/SIP/Msg/ccsipDisplayMsg:
+Sent: 
+SIP/2.0 200 OK
+Via: SIP/2.0/TCP 192.168.120.11:5060;branch=z9hG4bK28c354fedcb0d
+From: <sip:192.168.120.11>;tag=1985027802
+To: <sip:192.168.120.31>;tag=6343C64E-B98
+Date: Mon, 20 Apr 2026 09:56:23 GMT
+Call-ID: 2ee70300-1f215aa2-2870e-b78a8c0@192.168.120.11
+Server: Cisco-SIPGateway/IOS-17.9.4a
+CSeq: 101 OPTIONS
+Allow: INVITE, OPTIONS, BYE, CANCEL, ACK, PRACK, UPDATE, REFER, SUBSCRIBE, NOTIFY, INFO, REGISTER
+Allow-Events: kpml, telephone-event
+Accept: application/sdp
+
+UC8300D#

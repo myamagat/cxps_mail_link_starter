@@ -242,8 +242,94 @@ P-RTP-Stat: PS=1511,OS=317310,PR=0,OR=0,PL=0,JI=1,LA=-1,DU=30</pre>
     境界 FW/NAT の許可方向・タイムアウト・対称NAT挙動を最優先で見直してください。
   </div>
 
-  <h2>6. 推奨対策</h2>
-  <h3>6.1 ファイアウォール許可</h3>
+  <h2>6. 追試結果 (2026-04-20: CAP4 + debug)</h2>
+  <p>FW に RTP 許可ルール追加後の再試験でも片通話は継続し、LGW 側で 30 秒切断 (<code>cause=102</code>) が再現しました。</p>
+
+  <h3>6.1 debug 側の結果</h3>
+  <ul>
+    <li><code>show voip rtp connections</code> ではセッション自体は成立 (<code>16700 -&gt; 31582 @ 144.196.102.32</code>)</li>
+    <li>通話終端統計は <code>P-RTP-Stat: PR=0</code> のまま</li>
+    <li>切断理由は再び <code>Reason: Q.850;cause=102</code></li>
+  </ul>
+
+  <h3>6.2 CAP4 側の結果</h3>
+  <ul>
+    <li>LGW 送信 RTP は大量に存在
+      <ul>
+        <li><code>192.168.120.31:16698 -&gt; 144.196.102.103:30972</code> (1524 packets)</li>
+        <li><code>192.168.120.31:16700 -&gt; 144.196.102.32:31582</code> (1521 packets)</li>
+      </ul>
+    </li>
+    <li>LGW 宛ての戻り RTP/UDP は観測されず (DNS 応答のみ)</li>
+    <li>ICMP は <code>Type 3 Code 3 (Port Unreachable)</code> が 24 件</li>
+    <li>ICMP 送信元は Webex 側メディア IP (<code>144.196.102.103</code>, <code>144.196.102.32</code>)</li>
+  </ul>
+
+  <div class="note">
+    <strong>解釈:</strong> ICMP Destination Unreachable は「主原因」ではなく、LGW が送信した RTP 宛先ポートが相手側で閉じていることを示す<strong>結果</strong>です。<br>
+    根因は引き続き <strong>Webex -&gt; LGW の戻りRTP不達</strong> であり、受信側経路が成立しないため 30 秒でタイムアウトします。
+  </div>
+
+  <h3>6.3 CAP3 と CAP4 の差分比較</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>観点</th>
+        <th>CAP3</th>
+        <th>CAP4</th>
+        <th>評価</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>片通話の有無</td>
+        <td>継続</td>
+        <td>継続</td>
+        <td>未改善</td>
+      </tr>
+      <tr>
+        <td>切断要因</td>
+        <td><code>Q.850 cause=102</code> (30秒前後)</td>
+        <td><code>Q.850 cause=102</code> (30秒前後)</td>
+        <td>未改善</td>
+      </tr>
+      <tr>
+        <td>RTP受信統計</td>
+        <td><code>PR=0</code></td>
+        <td><code>PR=0</code></td>
+        <td>未改善</td>
+      </tr>
+      <tr>
+        <td>LGW → Webex RTP</td>
+        <td>送信あり</td>
+        <td>送信あり</td>
+        <td>正常継続</td>
+      </tr>
+      <tr>
+        <td>Webex → LGW RTP</td>
+        <td>観測なし</td>
+        <td>観測なし</td>
+        <td>未改善</td>
+      </tr>
+      <tr>
+        <td>ICMP Destination Unreachable</td>
+        <td>Type 3 Code 3 を観測</td>
+        <td>Type 3 Code 3 を多数観測</td>
+        <td>副次症状が明確化</td>
+      </tr>
+      <tr>
+        <td>総合判定</td>
+        <td>戻りRTP不達</td>
+        <td>戻りRTP不達</td>
+        <td>根因は同一</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>この比較から、FWルール追加後もメディア受信方向の実効性が得られていないことが分かります。ICMP は「戻りRTPが来ない」事象の代替シグナルであり、根因の置き換えではありません。</p>
+
+  <h2>7. 推奨対策</h2>
+  <h3>7.1 ファイアウォール許可</h3>
   <ul>
     <li>宛先: LGW メディアIP (192.168.120.31)</li>
     <li>プロトコル: UDP</li>
@@ -251,14 +337,15 @@ P-RTP-Stat: PS=1511,OS=317310,PR=0,OR=0,PL=0,JI=1,LA=-1,DU=30</pre>
     <li>送信元: Webex Calling メディアレンジ (運用中リージョン全体)</li>
   </ul>
 
-  <h3>6.2 NAT/セッション維持の確認</h3>
+  <h3>7.2 NAT/セッション維持の確認</h3>
   <ul>
     <li>UDP セッションタイムアウトが過小でないこと (少なくとも 60 秒以上を推奨)</li>
     <li>SIP ALG の不適切な書き換え無効化</li>
     <li>ポリシーが片方向のみ許可になっていないこと</li>
+    <li>ICMP Unreachable を生成した装置/ポリシーの確認 (上流FW/キャリア境界を含む)</li>
   </ul>
 
-  <h3>6.3 再試験時の確認コマンド</h3>
+  <h3>7.3 再試験時の確認コマンド</h3>
   <pre>show voip rtp connections
 show call active voice compact
 (debug ccsip messages / media を同時採取)</pre>
@@ -270,7 +357,7 @@ show call active voice compact
     <li>pcap で Webex → LGW の RTP が継続到達する</li>
   </ol>
 
-  <h2>7. 補足</h2>
+  <h2>8. 補足</h2>
   <div class="note">
     本解析では、LGW から送信された RTP が Webex 側へ到達している一方、逆方向のみ欠落しているため、
     音声品質やコーデック不一致よりも、ネットワーク境界での受信方向制御を優先して対処するのが最短です。
