@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cisco SD-WAN：IP／ポートベース ローカルブレークアウト 設定手順</title>
+  <style>
+    body { font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, Arial, sans-serif; background:#f8fafc; color:#111; line-height:1.75; margin:0; }
+    main { max-width: 980px; margin: 28px auto; padding: 28px; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.07); background:#fff; }
+    h1 { color:#0b4a6f; margin:0 0 10px; font-size:1.5em; }
+    h2 { color:#0b4a6f; margin:28px 0 8px; font-size:1.15em; border-bottom: 2px solid #e0f2fe; padding-bottom:4px; }
+    h3 { color:#0369a1; margin:16px 0 6px; font-size:1em; }
+    p { margin: 0 0 12px; }
+    ul, ol { margin: 0 0 12px 20px; }
+    li { margin-bottom: 4px; }
+    pre { background:#f1f5f9; color:#1e293b; border:1px solid #cbd5e1; border-radius:8px; padding:12px 16px; overflow:auto; }
+    pre code { background:none; font-family: Consolas, Menlo, Monaco, "Courier New", monospace; font-size:14px; line-height:1.5; white-space:pre; display:block; }
+    code { background:#f1f5f9; padding:1px 5px; border-radius:4px; font-family: Consolas, Menlo, Monaco, "Courier New", monospace; font-size:92%; }
+    table { width:100%; border-collapse:collapse; margin: 10px 0 16px; font-size: 14px; }
+    th, td { border:1px solid #e5e7eb; padding:8px 10px; text-align:left; }
+    th { background:#f1f5f9; color:#0b4a6f; font-weight:600; }
+    tr:nth-child(even) td { background:#fafafa; }
+    .note    { background:#e0f2fe; border-left:5px solid #0ea5e9; padding:10px 14px; border-radius:6px; margin:12px 0; font-size:14px; }
+    .success { background:#dcfce7; border-left:5px solid #22c55e; padding:10px 14px; border-radius:6px; margin:12px 0; font-size:14px; }
+    .warn    { background:#fef9c3; border-left:5px solid #eab308; padding:10px 14px; border-radius:6px; margin:12px 0; font-size:14px; }
+    .danger  { background:#fee2e2; border-left:5px solid #ef4444; padding:10px 14px; border-radius:6px; margin:12px 0; font-size:14px; }
+    .summary { background:#f8fafc; border: 2px solid #e2e8f0; padding: 14px 18px; border-radius: 8px; margin-top:24px; }
+    .step-num { display:inline-block; background:#0b4a6f; color:#fff; border-radius:50%; width:24px; height:24px; text-align:center; line-height:24px; font-size:13px; font-weight:bold; margin-right:6px; flex-shrink:0; }
+    .step-header { display:flex; align-items:center; margin: 28px 0 8px; }
+    .step-header h2 { border:none; margin:0; padding:0; }
+    .path { background:#e0f2fe; padding:4px 10px; border-radius:5px; font-family: Consolas, Menlo, Monaco, monospace; font-size:13px; color:#0369a1; display:inline-block; margin-bottom:8px; }
+    .toc { background:#f1f5f9; border-radius:8px; padding:14px 20px; margin-bottom:24px; font-size:14px; }
+    .toc ul { margin:6px 0 0 16px; }
+    .toc a { color:#0369a1; text-decoration:none; }
+    .toc a:hover { text-decoration:underline; }
+    .version-badge { display:inline-block; background:#0b4a6f; color:#fff; border-radius:4px; padding:2px 10px; font-size:12px; font-weight:bold; margin-left:8px; vertical-align:middle; }
+    .checklist { list-style:none; margin-left:0; padding-left:0; }
+    .checklist li::before { content:"✅ "; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>🌐 Cisco SD-WAN：IP／ポートベース ローカルブレークアウト 設定手順
+    <span class="version-badge">Catalyst SD-WAN Manager 20.x</span>
+  </h1>
+  <p>既存の Default AAR &amp; QoS ポリシーを解除し、<strong>宛先IPアドレス＋ポート番号</strong>によるマッチングでトラフィックをローカルブレークアウト（DIA）させる Centralized Policy を新規作成する手順です。</p>
+
+  <div class="toc">
+    <strong>📋 目次</strong>
+    <ul>
+      <li><a href="#step1">STEP 1｜既存ポリシーの解除（Detach）</a></li>
+      <li><a href="#step2">STEP 2｜Data Prefix List の作成</a></li>
+      <li><a href="#step3">STEP 3｜Centralized Policy の新規作成</a></li>
+      <li><a href="#step4">STEP 4｜Traffic Data Policy の作成（Match／Action）</a></li>
+      <li><a href="#step5">STEP 5｜サイト・VPN の紐付けと Activate</a></li>
+      <li><a href="#step6">STEP 6｜動作確認</a></li>
+    </ul>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step-header" id="step1">
+    <span class="step-num">1</span>
+    <h2>既存ポリシーの解除（Detach）</h2>
+  </div>
+  <div class="path">Configuration → Policies → Centralized Policy</div>
+
+  <ol>
+    <li>対象ポリシーの右端 <code>…</code> をクリック</li>
+    <li><strong>「Detach」</strong> を選択（ポリシー定義は残したまま紐付けのみ解除）</li>
+    <li>確認ダイアログで <strong>OK</strong></li>
+    <li>自動的に vSmart へプッシュされ、エッジデバイスへ反映される</li>
+  </ol>
+
+  <div class="warn">⚠️ <strong>Delete と Detach の違い</strong><br>
+    <strong>Detach</strong>：Centralized Policy からの紐付けを外す（ポリシー定義は残る）<br>
+    <strong>Delete</strong>：ポリシー定義そのものを削除する<br>
+    ポリシーを再利用する可能性がある場合は Detach を推奨。
+  </div>
+
+  <div class="note">💡 Detach 後にポリシー内のルールがすべてなくなった場合、<code>Invalid policy – Policy is empty</code> エラーが表示されることがあります。これは正常な動作です。ポリシー一覧から Delete して新規作成に進んでください。</div>
+
+  <h3>解除確認コマンド</h3>
+  <pre><code>cedge148# show sdwan policy from-vsmart
+% No entries found.    ← この表示で解除完了</code></pre>
+
+  <!-- STEP 2 -->
+  <div class="step-header" id="step2">
+    <span class="step-num">2</span>
+    <h2>Data Prefix List の作成</h2>
+  </div>
+  <div class="path">Configuration → Policies → Add Policy → Create Groups of Interest → Data Prefix</div>
+
+  <div class="note">💡 Port List は Centralized Policy の Groups of Interest では作成できません（20.x 以降）。ポート番号は Traffic Data Policy のシーケンス作成時に直接入力します。</div>
+
+  <ol>
+    <li>左ペインの <strong>「Data Prefix」</strong> をクリック</li>
+    <li><strong>「New Data Prefix List」</strong> をクリック</li>
+    <li>以下のとおり入力して <strong>「Save」</strong></li>
+  </ol>
+
+  <table>
+    <tr><th>項目</th><th>設定値</th></tr>
+    <tr><td>Name</td><td><code>LBO-Dst-IP-List</code></td></tr>
+    <tr><td>Internet Protocol</td><td>IPv4</td></tr>
+    <tr><td>Add Data Prefix（例）</td><td>
+      <code>3.14.211.49/32</code><br>
+      <code>3.20.185.219/32</code><br>
+      <code>3.130.87.169/32</code><br>
+      <code>3.134.166.179/32</code><br>
+      <code>52.26.82.54/32</code><br>
+      <code>62.109.192.0/18</code><br>
+      <code>72.163.10.96/27</code>
+    </td></tr>
+  </table>
+
+  <!-- STEP 3 -->
+  <div class="step-header" id="step3">
+    <span class="step-num">3</span>
+    <h2>Centralized Policy の新規作成</h2>
+  </div>
+  <div class="path">Configuration → Policies → Centralized Policy → Add Policy</div>
+
+  <ol>
+    <li>Data Prefix List 作成後、ウィザードの <strong>「Next」</strong> を繰り返し <strong>「Configure Traffic Rules」</strong> まで進む</li>
+    <li><strong>「Traffic Data」</strong> タブをクリック</li>
+    <li><strong>「Add Policy」→「Create New」</strong> をクリック</li>
+    <li>以下を入力</li>
+  </ol>
+
+  <table>
+    <tr><th>項目</th><th>設定値</th></tr>
+    <tr><td>Name</td><td><code>LBO-Data-Policy</code></td></tr>
+    <tr><td>Description</td><td><code>Local Breakout by IP and Port</code>（任意）</td></tr>
+  </table>
+
+  <ol start="5">
+    <li><strong>「Sequence Type」</strong> ボタンをクリック → <strong>「Custom」</strong> を選択</li>
+  </ol>
+
+  <!-- STEP 4 -->
+  <div class="step-header" id="step4">
+    <span class="step-num">4</span>
+    <h2>Traffic Data Policy の作成（Match／Action）</h2>
+  </div>
+
+  <h3>4-1. Match 条件の設定</h3>
+  <p>シーケンス編集画面の <strong>「Match」タブ</strong> で以下を設定します。</p>
+
+  <table>
+    <tr><th>Match 条件</th><th>設定値</th></tr>
+    <tr><td>Destination Data Prefix List</td><td><code>LBO-Dst-IP-List</code>（作成済みリストを選択）</td></tr>
+    <tr><td>Destination Port</td><td><code>80 443 6970</code>（スペース区切りで入力）</td></tr>
+  </table>
+
+  <div class="note">💡 Destination IP Prefix の欄は空白のまま OK です。Data Prefix List で代替されます。</div>
+
+  <h3>4-2. Action の設定</h3>
+  <p><strong>「Actions」タブ</strong> に切り替えて以下を設定します。</p>
+
+  <table>
+    <tr><th>Action 項目</th><th>設定値</th><th>備考</th></tr>
+    <tr><td>Accept</td><td>✅ 選択</td><td></td></tr>
+    <tr><td>NAT VPN</td><td>✅ チェック ON</td><td>DIA としてインターネットへ直接転送</td></tr>
+    <tr><td>VPN</td><td><code>0</code></td><td>Transport／WAN 側 VPN</td></tr>
+    <tr><td>Fallback</td><td>✅ チェック ON</td><td>DIA 障害時に overlay 経由へ自動切替</td></tr>
+    <tr><td>DIA Bypass</td><td>チェック不要</td><td>NAT VPN + Fallback を使うため不要</td></tr>
+  </table>
+
+  <div class="note">💡 <strong>NAT VPN vs DIA Bypass</strong><br>
+    <strong>NAT VPN（推奨）</strong>：vSmart のポリシー制御下で DIA を実行。Fallback（overlay 迂回）が使える。<br>
+    <strong>DIA Bypass</strong>：ポリシー制御を完全にバイパスして DIA。Fallback なし。ゲスト WiFi など overlay へ戻さないトラフィック向け。
+  </div>
+
+  <ol>
+    <li><strong>「Save Match and Actions」</strong> をクリック</li>
+    <li>Default Action は <strong>「Drop」</strong> のまま（対象外トラフィックは overlay 転送させない場合）または <strong>「Accept」</strong>（通常転送させる場合）</li>
+    <li><strong>「Save Data Policy」</strong> をクリック</li>
+  </ol>
+
+  <!-- STEP 5 -->
+  <div class="step-header" id="step5">
+    <span class="step-num">5</span>
+    <h2>サイト・VPN の紐付けと Activate</h2>
+  </div>
+
+  <h3>5-1. ポリシー名の入力</h3>
+  <p>「Next」で <strong>「Apply Policies to Sites and VPNs」</strong> 画面に進み、以下を入力します。</p>
+  <table>
+    <tr><th>項目</th><th>設定値</th></tr>
+    <tr><td>Policy Name</td><td><code>LBO-IP-Port-Policy</code></td></tr>
+    <tr><td>Policy Description</td><td><code>Local Breakout by IP and Port</code>（任意）</td></tr>
+  </table>
+
+  <h3>5-2. Traffic Data タブでサイト・VPN を紐付け</h3>
+  <div class="path">Traffic Data タブ → New Site/WAN Region List and VPN List</div>
+  <table>
+    <tr><th>項目</th><th>設定値</th></tr>
+    <tr><td>Direction</td><td><strong>From Service</strong></td></tr>
+    <tr><td>Site List</td><td>対象サイトのリストを選択</td></tr>
+    <tr><td>VPN List</td><td>サービス側 VPN（例：<code>vpn_10</code>）を選択</td></tr>
+  </table>
+  <p>「Add」→「<strong>Save Policy</strong>」</p>
+
+  <h3>5-3. Activate（デプロイ）</h3>
+  <ol>
+    <li>Centralized Policy 一覧に戻り <code>LBO-IP-Port-Policy</code> の <code>…</code> → <strong>「Activate」</strong></li>
+    <li>対象デバイスを確認して <strong>「Activate」</strong> を実行</li>
+    <li><strong>Push vSmart Policy ✅ Validation success / Total Task: 1 Success: 1</strong> が表示されれば完了</li>
+  </ol>
+
+  <div class="success">✅ <code>Activated: true</code> になれば IP／ポートベース ローカルブレークアウトの設定完了！</div>
+
+  <!-- STEP 6 -->
+  <div class="step-header" id="step6">
+    <span class="step-num">6</span>
+    <h2>動作確認</h2>
+  </div>
+  <p>WAN Edge の CLI で以下のコマンドを実行して確認します。</p>
+
+  <h3>ポリシー配信確認</h3>
+  <pre><code>show sdwan policy from-vsmart</code></pre>
+  <p>以下のように Data Policy が配信されていれば成功：</p>
+  <pre><code>from-vsmart data-policy _vpn_10_LBO-Data-Policy
+ direction from-service
+ vpn-list vpn_10
+  sequence 1
+   match
+    destination-data-prefix-list LBO-Dst-IP-List
+    destination-port             443 6970 80
+   action accept
+    nat use-vpn 0
+    nat fallback
+  default-action drop
+from-vsmart lists vpn-list vpn_10
+ vpn 10
+from-vsmart lists data-prefix-list LBO-Dst-IP-List
+ ip-prefix 3.14.211.49/32
+ ip-prefix 3.20.185.219/32
+ ip-prefix 3.130.87.169/32
+ ip-prefix 3.134.166.179/32
+ ip-prefix 52.26.82.54/32
+ ip-prefix 62.109.192.0/18
+ ip-prefix 72.163.10.96/27</code></pre>
+
+  <h3>データポリシーのヒット確認</h3>
+  <pre><code>show sdwan policy data-policy-filter</code></pre>
+
+  <h3>NAT セッション確認（DIA の場合）</h3>
+  <pre><code>show ip nat translations</code></pre>
+
+  <div class="warn">⚠️ <strong>注意点</strong>
+    <ul style="margin:8px 0 0 16px;">
+      <li>Data Prefix List に入力漏れがないか <code>show sdwan policy from-vsmart</code> の出力で必ず確認すること</li>
+      <li>両デバイス（C8000v: <code>GigabitEthernet1</code> / ISR4321: <code>GigabitEthernet0/0/0</code>）でデバイステンプレートの NAT Direct Internet Access が有効になっていることが前提</li>
+      <li>FQDN / ワイルドカード URL（例：<code>*.webex.com</code>）は Data Prefix List に登録できない。アプリ識別が必要な場合は AAR の Application List を使用すること</li>
+    </ul>
+  </div>
+
+  <div class="summary">
+    <strong>📌 まとめ：</strong>
+    <em>既存ポリシー Detach → Data Prefix List 作成 → Centralized Policy 新規作成 → Traffic Data Policy（NAT VPN + Fallback）→ サイト・VPN 紐付け → Activate</em> の流れで、IP アドレス＋ポート番号ベースのローカルブレークアウトが実現できます。
+  </div>
+
+</main>
+</body>
+</html>
