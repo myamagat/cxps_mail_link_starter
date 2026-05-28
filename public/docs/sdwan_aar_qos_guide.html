@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cisco SD-WAN：Default AAR & QoS + Webex ローカルブレークアウト 設定手順</title>
+  <style>
+    body { font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, Arial, sans-serif; background:#f8fafc; color:#111; line-height:1.75; margin:0; }
+    main { max-width: 980px; margin: 28px auto; padding: 28px; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.07); background:#fff; }
+    h1 { color:#0b4a6f; margin:0 0 10px; font-size:1.5em; }
+    h2 { color:#0b4a6f; margin:28px 0 8px; font-size:1.15em; border-bottom: 2px solid #e0f2fe; padding-bottom:4px; }
+    h3 { color:#0369a1; margin:16px 0 6px; font-size:1em; }
+    p { margin: 0 0 12px; }
+    ul, ol { margin: 0 0 12px 20px; }
+    li { margin-bottom: 4px; }
+    pre { background:#f1f5f9; color:#1e293b; border:1px solid #cbd5e1; border-radius:8px; padding:12px 16px; overflow:auto; }
+    pre code { background:none; font-family: Consolas, Menlo, Monaco, "Courier New", monospace; font-size:14px; line-height:1.5; white-space:pre; display:block; }
+    code { background:#f1f5f9; padding:1px 5px; border-radius:4px; font-family: Consolas, Menlo, Monaco, "Courier New", monospace; font-size:92%; }
+    table { width:100%; border-collapse:collapse; margin: 10px 0 16px; font-size: 14px; }
+    th, td { border:1px solid #e5e7eb; padding:8px 10px; text-align:left; }
+    th { background:#f1f5f9; color:#0b4a6f; font-weight:600; }
+    tr:nth-child(even) td { background:#fafafa; }
+    .note    { background:#e0f2fe; border-left:5px solid #0ea5e9; padding:10px 14px; border-radius:6px; margin:12px 0; font-size:14px; }
+    .success { background:#dcfce7; border-left:5px solid #22c55e; padding:10px 14px; border-radius:6px; margin:12px 0; font-size:14px; }
+    .warn    { background:#fef9c3; border-left:5px solid #eab308; padding:10px 14px; border-radius:6px; margin:12px 0; font-size:14px; }
+    .danger  { background:#fee2e2; border-left:5px solid #ef4444; padding:10px 14px; border-radius:6px; margin:12px 0; font-size:14px; }
+    .summary { background:#f8fafc; border: 2px solid #e2e8f0; padding: 14px 18px; border-radius: 8px; margin-top:24px; }
+    .step-num { display:inline-block; background:#0b4a6f; color:#fff; border-radius:50%; width:24px; height:24px; text-align:center; line-height:24px; font-size:13px; font-weight:bold; margin-right:6px; flex-shrink:0; }
+    .step-header { display:flex; align-items:center; margin: 28px 0 8px; }
+    .step-header h2 { border:none; margin:0; padding:0; }
+    .kbd { display:inline-block; padding:1px 6px; border:1px solid #cbd5e1; border-bottom-width:2px; border-radius:4px; background:#fff; font-family: Consolas, Menlo, Monaco, "Courier New", monospace; font-size:90%; }
+    .path { background:#e0f2fe; padding:4px 10px; border-radius:5px; font-family: Consolas, Menlo, Monaco, monospace; font-size:13px; color:#0369a1; display:inline-block; margin-bottom:8px; }
+    .checklist { list-style:none; margin-left:0; padding-left:0; }
+    .checklist li::before { content:"✅ "; }
+    .toc { background:#f1f5f9; border-radius:8px; padding:14px 20px; margin-bottom:24px; font-size:14px; }
+    .toc ul { margin:6px 0 0 16px; }
+    .toc a { color:#0369a1; text-decoration:none; }
+    .toc a:hover { text-decoration:underline; }
+    .version-badge { display:inline-block; background:#0b4a6f; color:#fff; border-radius:4px; padding:2px 10px; font-size:12px; font-weight:bold; margin-left:8px; vertical-align:middle; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>🛡️ Cisco SD-WAN：Default AAR &amp; QoS + Webex ローカルブレークアウト 設定手順
+    <span class="version-badge">vManage 20.15.4.2</span>
+  </h1>
+  <p>vManage の <strong>「Add Default AAR &amp; QoS」ウィザード</strong> を使い、AAR／QoS ポリシーを作成・有効化し、Webex トラフィックをローカルブレークアウト（DIA）させるまでの手順をまとめます。</p>
+
+  <div class="toc">
+    <strong>📋 目次</strong>
+    <ul>
+      <li><a href="#step1">STEP 1｜Default AAR &amp; QoS ポリシーの作成（ウィザード）</a></li>
+      <li><a href="#step2">STEP 2｜Centralized Policy への紐付け</a></li>
+      <li><a href="#step3">STEP 3｜vSmart を vManage モードに変更</a></li>
+      <li><a href="#step4">STEP 4｜ポリシーの Activate</a></li>
+      <li><a href="#step5">STEP 5｜Webex ローカルブレークアウト（Traffic Data Policy）</a></li>
+      <li><a href="#step6">STEP 6｜動作確認</a></li>
+    </ul>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step-header" id="step1">
+    <span class="step-num">1</span>
+    <h2>Default AAR &amp; QoS ポリシーの作成（ウィザード）</h2>
+  </div>
+  <div class="path">Configuration → Policies → Centralized Policy → Add Default AAR &amp; QoS</div>
+
+  <p>ウィザードは以下の 6 ステップで構成されます。</p>
+  <table>
+    <tr><th>ステップ</th><th>内容</th><th>設定のポイント</th></tr>
+    <tr><td>1. Categorize Applications</td><td>アプリをカテゴリ分け</td><td>Webex 系は <code>multimedia-conferencing</code> と <code>signaling</code> にデフォルトで分類済み。そのままでOK</td></tr>
+    <tr><td>2. Set the path preference</td><td>回線優先順位</td><td>ECMP でよければデフォルトのまま「Next」</td></tr>
+    <tr><td>3. Customize the SLA parameters</td><td>Loss / Latency / Jitter 閾値</td><td>デフォルト推奨値のままでOK（Voice-And-Video: Loss 2% / Latency 300ms / Jitter 60ms）</td></tr>
+    <tr><td>4. Select a SP class model</td><td>SP の QoS クラス数選択</td><td>不明な場合はデフォルト「4」のまま</td></tr>
+    <tr><td>5. Name the policies</td><td>ポリシー名／Prefix 入力</td><td>Prefix を入力（例：<code>mod-cc</code>）。各ポリシー名は自動生成</td></tr>
+    <tr><td>6. Review the configuration</td><td>設定確認・保存</td><td>内容を確認後「Configure」をクリック → <strong>Done</strong> が表示されれば完了</td></tr>
+  </table>
+
+  <div class="note">⚠️ ウィザード完了後、作成されたポリシーは <strong>Custom Options → App Aware Routing</strong> に保存されます。Centralized Policy への紐付けは別途必要です。</div>
+
+  <!-- STEP 2 -->
+  <div class="step-header" id="step2">
+    <span class="step-num">2</span>
+    <h2>Centralized Policy への紐付け</h2>
+  </div>
+  <div class="path">Configuration → Policies → Centralized Policy → Add Policy</div>
+
+  <ol>
+    <li>「Add Topology」はスキップして「Next」</li>
+    <li><strong>Traffic Rules → Application Aware Routing</strong> タブを選択</li>
+    <li>「Add Policy」→「<strong>Import Existing</strong>」で STEP 1 で作成したポリシーを選択</li>
+    <li>ポリシーが「<strong>imported</strong>」になったことを確認して「Next」</li>
+    <li>ポリシー名を入力して「<strong>Save Policy</strong>」</li>
+  </ol>
+
+  <div class="success">✅ Centralized Policy 一覧に追加され、<code>Activated: false</code> の状態になっていれば成功</div>
+
+  <!-- STEP 3 -->
+  <div class="step-header" id="step3">
+    <span class="step-num">3</span>
+    <h2>vSmart を vManage モードに変更</h2>
+  </div>
+
+  <div class="warn">⚠️ Activate 時に <code>vSmarts are not in vManage mode</code> エラーが出た場合は、以下の手順で vSmart をテンプレート管理に移行します。</div>
+
+  <h3>3-1. vSmart の現在の設定を確認</h3>
+  <pre><code>vSmart# show system status
+# → vManaged: false であることを確認</code></pre>
+
+  <h3>3-2. CLI Template を作成</h3>
+  <div class="path">Configuration → Templates → Device Templates → Add Template → CLI Template</div>
+  <table>
+    <tr><th>項目</th><th>設定値</th></tr>
+    <tr><td>Device Model</td><td>Controller</td></tr>
+    <tr><td>Template Name</td><td>vSmart-Default-Template（任意）</td></tr>
+    <tr><td>CLI 設定</td><td>「Load Running config from reachable device」で vSmart の設定を自動読み込み</td></tr>
+  </table>
+  <p>「Save」でテンプレートを保存。</p>
+
+  <h3>3-3. テンプレートを vSmart にアタッチ</h3>
+  <div class="path">Configuration → Devices → Controllers → vSmart の「…」→ Manager Mode</div>
+  <ol>
+    <li>「Change Mode - Manager」画面で「<strong>Go Template</strong>」をクリック</li>
+    <li>作成したテンプレートを選択して「<strong>Attach</strong>」</li>
+    <li><code>Devices Attached: 1</code> になれば完了</li>
+  </ol>
+
+  <!-- STEP 4 -->
+  <div class="step-header" id="step4">
+    <span class="step-num">4</span>
+    <h2>ポリシーの Activate</h2>
+  </div>
+  <div class="path">Configuration → Policies → Centralized Policy</div>
+
+  <ol>
+    <li>作成したポリシーの「<strong>…</strong>」→「<strong>Activate</strong>」をクリック</li>
+    <li>確認ダイアログで「Activate」</li>
+    <li><code>Activated: <strong>true</strong></code> になれば成功 🎉</li>
+  </ol>
+
+  <!-- STEP 5 -->
+  <div class="step-header" id="step5">
+    <span class="step-num">5</span>
+    <h2>Webex ローカルブレークアウト（Traffic Data Policy）</h2>
+  </div>
+  <div class="path">Configuration → Policies → Centralized Policy → 対象ポリシーの「…」→ Edit → Traffic Rules → Traffic Data</div>
+
+  <h3>5-1. Traffic Data Policy の作成</h3>
+  <ol>
+    <li>「Add Policy」→「<strong>Create New</strong>」</li>
+    <li>Name: <code>Webex-Breakout-Policy</code>（任意）</li>
+    <li>Sequence Type：「<strong>Custom</strong>」をドラッグ＆ドロップ</li>
+  </ol>
+
+  <h3>5-2. Match 条件の設定</h3>
+  <table>
+    <tr><th>項目</th><th>設定値</th></tr>
+    <tr><td>Application List</td><td><code>webex-app</code>（Webex 全アプリを含むリスト）</td></tr>
+  </table>
+
+  <h3>5-3. Action の設定</h3>
+  <table>
+    <tr><th>項目</th><th>設定値</th></tr>
+    <tr><td>Accept</td><td>✅ 選択</td></tr>
+    <tr><td>NAT VPN</td><td>✅ 選択</td></tr>
+    <tr><td>DIA Bypass</td><td>✅ チェック ← ローカルブレークアウトの核心設定</td></tr>
+  </table>
+
+  <p>「Save Match and Actions」→「Save Data Policy」</p>
+
+  <h3>5-4. Site List / VPN List の紐付け</h3>
+  <div class="path">Policy Application タブ → Traffic Data → New Site/WAN Region List and VPN List</div>
+  <table>
+    <tr><th>項目</th><th>設定値</th></tr>
+    <tr><td>Direction</td><td>From Service</td></tr>
+    <tr><td>Site List</td><td>ブレークアウトさせたいサイトを選択</td></tr>
+    <tr><td>VPN List</td><td>対象 VPN（例：VPN 10）を選択</td></tr>
+  </table>
+  <p>「Add」→「<strong>Save Policy Changes</strong>」→「<strong>Activate</strong>」</p>
+
+  <div class="success">✅ <code>Activated: true</code> になれば Webex ローカルブレークアウトの設定完了！</div>
+
+  <!-- STEP 6 -->
+  <div class="step-header" id="step6">
+    <span class="step-num">6</span>
+    <h2>動作確認</h2>
+  </div>
+  <p>WAN Edge の CLI で以下のコマンドを実行して確認します。</p>
+
+  <h3>ポリシー配信確認</h3>
+  <pre><code>show sdwan policy from-vsmart</code></pre>
+  <p>以下のように Data Policy が配信されていれば成功：</p>
+  <pre><code>from-vsmart data-policy _vpn_10_Webex-Breakout-Policy
+ direction from-service
+  sequence 1
+   match
+    app-list mod-cc-webex-app
+   action accept
+    nat use-vpn 0
+    nat bypass</code></pre>
+
+  <h3>DIA ブレークアウト確認</h3>
+  <pre><code>show sdwan nat dia-table</code></pre>
+
+  <h3>AAR 統計確認</h3>
+  <pre><code>show sdwan app-route stats</code></pre>
+
+  <div class="summary">
+    <strong>📌 まとめ：</strong>
+    <em>Add Default AAR &amp; QoS ウィザード → Centralized Policy 紐付け → vSmart テンプレート適用 → Activate → Traffic Data Policy（DIA Bypass）→ Activate</em> の流れで、Webex トラフィックのローカルブレークアウトが実現できます。
+  </div>
+
+</main>
+</body>
+</html>
